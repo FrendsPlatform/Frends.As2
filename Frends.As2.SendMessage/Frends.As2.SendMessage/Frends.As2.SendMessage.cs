@@ -1,0 +1,103 @@
+﻿using System;
+using System.ComponentModel;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
+using Frends.As2.SendMessage.Definitions;
+using Frends.As2.SendMessage.Helpers;
+using MimeKit;
+using Org.BouncyCastle.X509;
+
+namespace Frends.As2.SendMessage;
+
+/// <summary>
+/// Task class.
+/// </summary>
+public static class As2
+{
+    /// <summary>
+    /// As2 SendMessage task sends a message to an AS2 server using the provided parameters.
+    /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-As2-SendMessage)
+    /// </summary>
+    /// <param name="input">Essential parameters.</param>
+    /// <param name="connection">Connection parameters.</param>
+    /// <param name="options">Additional parameters.</param>
+    /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
+    /// <returns>object { bool Success, string Output, object Error { string Message, dynamic AdditionalInfo } }</returns>
+    // TODO: Remove Connection parameter if the task does not make connections
+    public static async Task<Result> SendMessage(
+        [PropertyTab] Input input,
+        [PropertyTab] Connection connection,
+        [PropertyTab] Options options,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var signingCert = new X509Certificate2(
+                connection.SenderCertificatePath,
+                connection.SenderCertificatePassword,
+                X509KeyStorageFlags.Exportable | X509KeyStorageFlags.UserKeySet);
+            var recipientCert =
+                new X509CertificateParser().ReadCertificate(await File.ReadAllBytesAsync(
+                    connection.ReceiverCertificatePath,
+                    cancellationToken));
+
+            HttpClient httpClient = new();
+
+            var data = await File.ReadAllBytesAsync(input.MessageFilePath, cancellationToken);
+
+            var entity = new MimePart("application", "octet-stream")
+            {
+                Content = new MimeContent(new MemoryStream(data)),
+                ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                ContentTransferEncoding = ContentEncoding.Base64,
+                FileName = Path.GetFileName(input.MessageFilePath),
+            };
+
+            if (options.SignMessage)
+            {
+                entity = (MimePart)Helpers.Helpers.SignEntity(
+                    entity,
+                    signingCert,
+                    connection.SenderCertificatePassword);
+            }
+
+            ByteArrayContent content;
+
+            if (options.EncryptMessage)
+            {
+                var encrypted = Helpers.Helpers.EncryptEntity(entity, recipientCert);
+                content = new ByteArrayContent(encrypted);
+            }
+            else
+            {
+                using var stream = new MemoryStream();
+                await entity.WriteToAsync(stream, cancellationToken);
+                content = new ByteArrayContent(stream.ToArray());
+            }
+
+            var messageId = $"<{Guid.NewGuid()}@as2client>";
+            content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/pkcs7-mime; smime-type=signed-data");
+            content.Headers.Add("AS2-Version", "1.2");
+            content.Headers.Add("AS2-From", input.SenderAs2Id);
+            content.Headers.Add("AS2-To", input.ReceiverAs2Id);
+            content.Headers.Add("Message-ID", messageId);
+            content.Headers.Add("Subject", input.Subject);
+            content.Headers.Add("Content-Transfer-Encoding", "binary");
+            content.Headers.Add("Disposition-Notification-To", input.SenderAs2Id);
+            content.Headers.Add(
+                "Disposition-Notification-Options",
+                "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1");
+
+            var response = await httpClient.PostAsync(connection.As2EndpointUrl, content, cancellationToken);
+            return new Result { Success = response.IsSuccessStatusCode, Error = null, };
+        }
+        catch (Exception e)
+        {
+            return ErrorHandler.Handle(e, options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
+        }
+    }
+}

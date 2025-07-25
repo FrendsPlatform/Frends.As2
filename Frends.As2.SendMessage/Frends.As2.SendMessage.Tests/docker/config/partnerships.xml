@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<partnerships>
+                        
+    
+    
+    
+    
+    <partner as2_id="SenderAS2" email="sender@test.com" name="Sender" x509_alias="sender_cert"/>
+                        
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    <partner as2_id="SignedReceiver" email="receiver@test.com" name="SignedReceiver" x509_alias="receiver_cert"/>
+                    
+    
+    
+    
+    <partner _id="2" as2_id="BasicReceiver" email="receiver@test.com" name="BasicReceiver" x509_alias="receiver_cert"/>
+                    
+    
+    
+    
+    <partner as2_id="EncryptedReceiver" email="receiver@test.com" name="EncryptedReceiver" x509_alias="receiver_cert"/>
+                    
+    
+    
+    
+    <partner as2_id="SignedAndEncryptedReceiver" email="receiver@test.com" name="SignedAndEncryptedReceiver" x509_alias="receiver_cert"/>
+                
+    
+    
+    
+    <partnership name="Basic">
+                                
+        
+        
+        <sender name="Sender"/>
+                                
+        
+        
+        <receiver name="BasicReceiver"/>
+                                
+        
+        
+        <attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1"/>
+                                
+        
+        
+        <attribute name="receiverIDs" value="BasicReceiver"/>
+                                
+        
+        
+        <attribute name="subject" value="Basic Connection"/>
+                                
+        
+        
+        <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+                                
+        
+        
+        <attribute name="compression_type" value=""/>
+                                
+        
+        
+        <attribute name="sign" value="SHA1"/>
+                                
+        
+        
+        <attribute name="prevent_canonicalization_for_mic" value="false"/>
+                                
+        
+        
+        <attribute name="senderIDs" value="Sender"/>
+                                
+        
+        
+        <attribute name="resend_max_retries" value=""/>
+                                
+        
+        
+        <attribute name="as2_receipt_option" value="as2.com:10081"/>
+                                
+        
+        
+        <attribute name="content_transfer_encoding" value="8bit"/>
+                                
+        
+        
+        <attribute name="protocol" value=""/>
+                                
+        
+        
+        <attribute name="as2_mdn_to" value="admin@test.com"/>
+                                
+        
+        
+        <attribute name="encrypt" value="3DES"/>
+                                
+        
+        
+        <attribute name="as2_url" value="as2.com:10080"/>
+                                
+        
+        
+        <attribute name="rename_digest_to_old_name" value="false"/>
+                                
+        
+        
+        <attribute name="name" value="Basic"/>
+                            
+    
+    
+    </partnership>
+                
+    
+    
+    <partnership name="SignedAndEncrypted">
+                                
+        
+        
+        <sender name="Sender"/>
+                                
+        
+        
+        <receiver name="SignedAndEncryptedReceiver"/>
+                                
+        
+        
+        <attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1"/>
+                                
+        
+        
+        <attribute name="receiverIDs" value="SignedAndEncryptedReceiver"/>
+                                
+        
+        
+        <attribute name="subject" value="SignedAndEncrypted Connection"/>
+                                
+        
+        
+        <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+                                
+        
+        
+        <attribute name="compression_type" value=""/>
+                                
+        
+        
+        <attribute name="sign" value="SHA1"/>
+                                
+        
+        
+        <attribute name="prevent_canonicalization_for_mic" value="false"/>
+                                
+        
+        
+        <attribute name="senderIDs" value="Sender"/>
+                                
+        
+        
+        <attribute name="resend_max_retries" value=""/>
+                                
+        
+        
+        <attribute name="as2_receipt_option" value="as2.com:10081"/>
+                                
+        
+        
+        <attribute name="content_transfer_encoding" value="8bit"/>
+                                
+        
+        
+        <attribute name="protocol" value=""/>
+                                
+        
+        
+        <attribute name="as2_mdn_to" value="admin@test.com"/>
+                                
+        
+        
+        <attribute name="encrypt" value="3DES"/>
+                                
+        
+        
+        <attribute name="as2_url" value="as2.com:10080"/>
+                                
+        
+        
+        <attribute name="rename_digest_to_old_name" value="false"/>
+                                
+        
+        
+        <attribute name="name" value="SignedAndEncrypted"/>
+                            
+    
+    
+    </partnership>
+            
+    
+    
+    <partnership name="Signed">
+                        
+        
+        <sender name="Sender"/>
+                        
+        
+        <receiver name="SignedReceiver"/>
+                        
+        
+        <attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1"/>
+                        
+        
+        <attribute name="receiverIDs" value="SignedReceiver"/>
+                        
+        
+        <attribute name="subject" value="Signed Connection"/>
+                        
+        
+        <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+                        
+        
+        <attribute name="compression_type" value=""/>
+                        
+        
+        <attribute name="sign" value="SHA1"/>
+                        
+        
+        <attribute name="prevent_canonicalization_for_mic" value="false"/>
+                        
+        
+        <attribute name="senderIDs" value="Sender"/>
+                        
+        
+        <attribute name="resend_max_retries" value=""/>
+                        
+        
+        <attribute name="as2_receipt_option" value="as2.com:10081"/>
+                        
+        
+        <attribute name="content_transfer_encoding" value="8bit"/>
+                        
+        
+        <attribute name="protocol" value=""/>
+                        
+        
+        <attribute name="as2_mdn_to" value="admin@test.com"/>
+                        
+        
+        <attribute name="encrypt" value="3DES"/>
+                        
+        
+        <attribute name="as2_url" value="as2.com:10080"/>
+                        
+        
+        <attribute name="rename_digest_to_old_name" value="false"/>
+                        
+        
+        <attribute name="name" value="Signed"/>
+                    
+    
+    </partnership>
+            
+    
+    <partnership name="Encrypted">
+                        
+        
+        <sender name="Sender"/>
+                        
+        
+        <receiver name="EncryptedReceiver"/>
+                        
+        
+        <attribute name="as2_mdn_options" value="signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha1"/>
+                        
+        
+        <attribute name="receiverIDs" value="EncryptedReceiver"/>
+                        
+        
+        <attribute name="subject" value="Encrypted Connection"/>
+                        
+        
+        <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
+                        
+        
+        <attribute name="compression_type" value=""/>
+                        
+        
+        <attribute name="sign" value="SHA1"/>
+                        
+        
+        <attribute name="prevent_canonicalization_for_mic" value="false"/>
+                        
+        
+        <attribute name="senderIDs" value="Sender"/>
+                        
+        
+        <attribute name="resend_max_retries" value=""/>
+                        
+        
+        <attribute name="as2_receipt_option" value="as2.com:10081"/>
+                        
+        
+        <attribute name="content_transfer_encoding" value="8bit"/>
+                        
+        
+        <attribute name="protocol" value=""/>
+                        
+        
+        <attribute name="as2_mdn_to" value="admin@test.com"/>
+                        
+        
+        <attribute name="encrypt" value="3DES"/>
+                        
+        
+        <attribute name="as2_url" value="as2.com:10080"/>
+                        
+        
+        <attribute name="rename_digest_to_old_name" value="false"/>
+                        
+        
+        <attribute name="name" value="Encrypted"/>
+                    
+    
+    </partnership>
+        
+    
+
+</partnerships>
