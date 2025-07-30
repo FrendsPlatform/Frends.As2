@@ -11,8 +11,19 @@ using Org.BouncyCastle.X509;
 
 namespace Frends.As2.SendMessage.Helpers;
 
+/// <summary>
+/// Methods for signing, encrypting, decrypting, and verifying messages.
+/// </summary>
 public static class Helpers
 {
+    /// <summary>
+    /// Extension method to sign data using a certificate.
+    /// </summary>
+    /// <param name="data">bytes to sign</param>
+    /// <param name="signingCertPath">path to certificate</param>
+    /// <param name="signingCertPassword">password for certificate</param>
+    /// <param name="algorithmOid">used algorithm Oid</param>
+    /// <returns>byte[]</returns>
     public static byte[] Sign(this byte[] data, string signingCertPath, string signingCertPassword, string algorithmOid)
     {
         var signingCert = new X509Certificate2(signingCertPath, signingCertPassword);
@@ -27,6 +38,14 @@ public static class Helpers
         return signedCms.Encode();
     }
 
+    /// <summary>
+    /// Extension method to encrypt data using a receiver's certificate.
+    /// </summary>
+    /// <param name="data">bytes to encrypt</param>
+    /// <param name="receiverCertificatePath">path to file</param>
+    /// <param name="algorithmOid">algorithm Oid</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    /// <returns>byte[]</returns>
     public static async Task<byte[]> Encrypt(
         this byte[] data,
         string receiverCertificatePath,
@@ -43,6 +62,13 @@ public static class Helpers
         return enveloped.GetEncoded();
     }
 
+    /// <summary>
+    /// Extension method to decrypt data using a receiver's private key from a PFX file.
+    /// </summary>
+    /// <param name="encryptedData">data to decrypt</param>
+    /// <param name="receiverPfxPath">path to file</param>
+    /// <param name="receiverPfxPassword">password to file</param>
+    /// <returns>byte[]</returns>
     public static byte[] Decrypt(
         this byte[] encryptedData,
         string receiverPfxPath,
@@ -55,15 +81,12 @@ public static class Helpers
             store.Load(stream, receiverPfxPassword.ToCharArray());
         }
 
-        // Get the first alias with a private key
         var alias = store.Aliases.FirstOrDefault(store.IsKeyEntry);
         var privateKey = store.GetKey(alias).Key;
         var cert = store.GetCertificate(alias).Certificate;
 
-        // Parse the encrypted data
         var envelopedData = new CmsEnvelopedData(encryptedData);
 
-        // Find the recipient info that matches our certificate
         var recipientInfos = envelopedData.GetRecipientInfos();
         var recipientId = new RecipientID
         {
@@ -73,11 +96,16 @@ public static class Helpers
 
         var recipient = recipientInfos.GetFirstRecipient(recipientId);
 
-        // Decrypt
         var decrypted = recipient.GetContent(privateKey);
         return decrypted;
     }
 
+    /// <summary>
+    /// Extension method to verify a signed message using a CA certificate.
+    /// </summary>
+    /// <param name="data">bytes to verify</param>
+    /// <param name="caCertPath">path to file</param>
+    /// <returns>byte[]</returns>
     public static byte[] VerifySignature(
         this byte[] data,
         string caCertPath)

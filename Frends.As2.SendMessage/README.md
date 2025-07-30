@@ -1,6 +1,6 @@
 # Frends.As2.SendMessage
 
-Description of what the Task will do.
+Task to send messaged with AS2 protocol
 
 [![SendMessage_build](https://github.com/FrendsPlatform/Frends.As2/actions/workflows/SendMessage_build_and_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.As2/actions/workflows/SendMessage_build_and_test_on_main.yml)
 ![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.As2/Frends.As2.SendMessage|main)
