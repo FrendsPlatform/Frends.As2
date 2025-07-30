@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <partnerships>
+                                    
+    
+    
+    
+    
+    
+    
+    
                                 
     
     
@@ -7,16 +15,8 @@
     
     
     
-    <partner as2_id="SenderAS2" email="sender@test.com" name="Sender" x509_alias="sender_cert"/>
-                                
     
     
-    
-    
-    
-    
-    
-    <partner as2_id="SignedAndEncryptedReceiver" email="receiver@test.com" name="SignedAndEncryptedReceiver" x509_alias="receiver_cert"/>
                                 
 
     
@@ -31,11 +31,15 @@
 
     
 
-    <partnership name="SignedAndEncrypted">
+    
+
+    <partner _id="1" as2_id="Receiver" email="receiver@test.com" name="Receiver" x509_alias="receiver_cert"/>
+    <partner _id="0" as2_id="Sender" email="sender@test.com" name="Sender" x509_alias="sender_cert"/>
+    <partnership name="TestConnection">
         <sender name="Sender"/>
-        <receiver name="SignedAndEncryptedReceiver"/>
+        <receiver name="Receiver"/>
         <attribute name="as2_mdn_options" value="pkcs7-signature; signed-receipt-micalg=required, sha1"/>
-        <attribute name="receiverIDs" value="SignedAndEncryptedReceiver"/>
+        <attribute name="receiverIDs" value="Receiver"/>
         <attribute name="subject" value="SignedAndEncrypted Connection"/>
         <attribute name="remove_cms_algorithm_protection_attrib" value="false"/>
         <attribute name="compression_type" value=""/>
@@ -50,7 +54,7 @@
         <attribute name="encrypt" value="AES256"/>
         <attribute name="as2_url" value="as2.com:10080"/>
         <attribute name="rename_digest_to_old_name" value="false"/>
-        <attribute name="name" value="SignedAndEncrypted"/>
+        <attribute name="name" value="TestConnection"/>
         <attribute name="_id" value="0"/>
     </partnership>
 </partnerships>

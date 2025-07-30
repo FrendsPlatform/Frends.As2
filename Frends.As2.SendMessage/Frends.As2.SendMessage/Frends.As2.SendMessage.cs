@@ -55,12 +55,13 @@ public static class As2
             else if (options.EncryptMessage)
                 contentType = "application/pkcs7-mime; smime-type=enveloped-data";
 
+            var messageId = Guid.NewGuid().ToString();
             var content = new ByteArrayContent(data);
             content.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
             content.Headers.Add("AS2-Version", "1.2");
             content.Headers.Add("AS2-From", input.SenderAs2Id);
             content.Headers.Add("AS2-To", input.ReceiverAs2Id);
-            content.Headers.Add("Message-ID", Guid.NewGuid().ToString());
+            content.Headers.Add("Message-ID", messageId);
             content.Headers.Add("Subject", input.Subject);
             content.Headers.Add("Content-Transfer-Encoding", "binary");
             content.Headers.Add("Disposition-Notification-To", connection.MdnReceiver);
@@ -69,7 +70,7 @@ public static class As2
                 "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha512");
 
             var response = await httpClient.PostAsync(connection.As2EndpointUrl, content, cancellationToken);
-            return new Result { Success = response.IsSuccessStatusCode, Error = null, };
+            return new Result { Success = response.IsSuccessStatusCode, Error = null, MessageId = messageId };
         }
         catch (Exception e)
         {

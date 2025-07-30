@@ -16,4 +16,10 @@ public class Result
     /// </summary>
     /// <example>object { string Message, object { Exception Exception } AdditionalInfo }</example>
     public Error Error { get; set; }
+
+    /// <summary>
+    /// ID of a sent message.
+    /// </summary>
+    /// <example>123</example>
+    public string MessageId { get; set; }
 }
