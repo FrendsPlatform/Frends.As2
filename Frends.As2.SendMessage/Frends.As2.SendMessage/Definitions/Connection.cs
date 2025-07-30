@@ -30,7 +30,6 @@ public class Connection
     /// </summary>
     /// <example>C:\Document\sender_cert.pfx</example>
     [DisplayFormat(DataFormatString = "Text")]
-    [PasswordPropertyText]
     public string SenderCertificatePath { get; set; }
 
     /// <summary>
@@ -38,6 +37,19 @@ public class Connection
     /// </summary>
     /// <example>C:\Document\receiver_cert.pfx</example>
     [DisplayFormat(DataFormatString = "Text")]
-    [PasswordPropertyText]
     public string ReceiverCertificatePath { get; set; }
+
+    /// <summary>
+    /// URL or email where to send the MDN (Message Disposition Notification).
+    /// </summary>
+    /// <example>user@example.com</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    public string MdnReceiver { get; set; }
+
+    /// <summary>
+    /// Specify content type header for the message if it's neither encrypted nor signed.
+    /// </summary>
+    /// <example>application/zip</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    public string ContentTypeHeader { get; set; }
 }
