@@ -1,45 +1,36 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Frends.As2.SendMessage.Definitions;
+using Frends.As2.SendMessage.Helpers;
 using NUnit.Framework;
+using Org.BouncyCastle.Cms;
 
 namespace Frends.As2.SendMessage.Tests;
 
 [TestFixture]
 public class UnitTests
 {
-    private readonly Input input = new()
-    {
-        SenderAs2Id = "Sender",
-        ReceiverAs2Id = "Receiver",
-        Subject = "Test Connection",
-        MessageFilePath = Path.Combine(AppContext.BaseDirectory, "testData", "mess.txt"),
-    };
-
-    private readonly Connection connection = new()
-    {
-        As2EndpointUrl = "http://localhost:4080",
-        SenderCertificatePassword = "sender123",
-        SenderCertificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "sender.pfx"),
-        ReceiverCertificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "receiver.pem"),
-        ContentTypeHeader = "text/plain",
-        MdnReceiver = "usr@example.com",
-    };
-
-    private readonly Options options = new()
-    {
-        ThrowErrorOnFailure = false,
-        ErrorMessageOnFailure = null,
-        SignMessage = true,
-        EncryptMessage = true,
-    };
+    private readonly string signingCertPath = Path.Combine(AppContext.BaseDirectory, "certs", "sender.pem");
+    private readonly string signingPfxPath = Path.Combine(AppContext.BaseDirectory, "certs", "sender.pfx");
+    private readonly string receiverCertPath = Path.Combine(AppContext.BaseDirectory, "certs", "receiver.pem");
+    private readonly string receiverPfxPath = Path.Combine(AppContext.BaseDirectory, "certs", "receiver.pfx");
 
     [Test]
-    public async Task ShouldSendMessage()
+    public async Task ShouldEncryptAndDecryptMessage()
     {
-        var result = await As2.SendMessage(input, connection, options, CancellationToken.None);
-        Assert.That(result.Success, Is.True);
+        var input = new byte[] { 1, 2, 3, 4, 5 };
+        var encrypted = await input.Encrypt(receiverCertPath, CmsEnvelopedGenerator.Aes256Cbc, CancellationToken.None);
+        var decrypted = encrypted.Decrypt(receiverPfxPath, "receiver123");
+        Assert.That(decrypted, Is.EqualTo(input));
+    }
+
+    [Test]
+    public void ShouldSignAndVerifyMessage()
+    {
+        var input = new byte[] { 1, 2, 3, 4, 5 };
+        var signed = input.Sign(signingPfxPath, "sender123", CmsSignedGenerator.DigestSha512);
+        var verified = signed.VerifySignature(signingCertPath);
+        Assert.That(verified, Is.EqualTo(input));
     }
 }

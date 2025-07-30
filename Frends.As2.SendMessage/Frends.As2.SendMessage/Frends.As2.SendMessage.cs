@@ -35,17 +35,24 @@ public static class As2
     {
         try
         {
-            var signingCert =
-                new X509Certificate2(connection.SenderCertificatePath, connection.SenderCertificatePassword);
-
-            var receiverCertBytes = await File.ReadAllBytesAsync(connection.ReceiverCertificatePath, cancellationToken);
-            var receiverCert = new X509CertificateParser().ReadCertificate(receiverCertBytes);
-
-            HttpClient httpClient = new();
+            using HttpClient httpClient = new();
             var data = await File.ReadAllBytesAsync(input.MessageFilePath, cancellationToken);
 
-            if (options.SignMessage) data = data.Sign(signingCert, CmsSignedGenerator.DigestSha512);
-            if (options.EncryptMessage) data = data.Encrypt(receiverCert, CmsEnvelopedGenerator.Aes256Cbc);
+            if (options.SignMessage)
+            {
+                data = data.Sign(
+                    connection.SenderCertificatePath,
+                    connection.SenderCertificatePassword,
+                    CmsSignedGenerator.DigestSha512);
+            }
+
+            if (options.EncryptMessage)
+            {
+                data = await data.Encrypt(
+                    connection.ReceiverCertificatePath,
+                    CmsEnvelopedGenerator.Aes256Cbc,
+                    cancellationToken);
+            }
 
             var contentType = connection.ContentTypeHeader;
             if (options.SignMessage && options.EncryptMessage)
