@@ -20,7 +20,7 @@ public static class Helpers
         return signedCms.Encode();
     }
 
-    public static byte[] Encrypt(this byte[] data, X509Certificate receiverCert,  string algorithmOid)
+    public static byte[] Encrypt(this byte[] data, X509Certificate receiverCert, string algorithmOid)
     {
         var cmsData = new CmsProcessableByteArray(data);
         var generator = new CmsEnvelopedDataGenerator();
