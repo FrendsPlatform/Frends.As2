@@ -25,7 +25,7 @@ public class UnitTests
         SenderCertificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "sender.pfx"),
         ReceiverCertificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "receiver.pem"),
         ContentTypeHeader = "text/plain",
-        MdnReceiver = "user@example.com",
+        MdnReceiver = "usr@example.com",
     };
 
     private readonly Options options = new()
