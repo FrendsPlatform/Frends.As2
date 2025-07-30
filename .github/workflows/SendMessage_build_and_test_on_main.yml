@@ -14,5 +14,6 @@ jobs:
     with:
       workdir: Frends.As2.SendMessage
       dotnet_version: 8.0.x
+      prebuild_command: docker-compose -f .\Frends.As2.SendMessage.Tests\docker\docker-compose.yaml up -d
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
