@@ -8,7 +8,7 @@ Task to send messages with AS2 protocol
 
 ## Installing
 
-You can install the Task via frends UI Task View.
+You can install the Task via Frends UI Task View.
 
 ## Building
 
