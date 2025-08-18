@@ -22,9 +22,20 @@ You can install the Task via frends UI Task View.
 
 ### Run tests
 
-Run the tests
+**Prerequisites for integration tests:**
+- Docker and Docker Compose installed
 
-`dotnet test`
+**Start test services and run tests:**
+
+```bash
+# Start the OpenAS2 container
+docker-compose -f Frends.As2.SendMessage.Tests/docker/docker-compose.yaml up -d
+
+# Run the tests
+dotnet test
+
+# Optional: Stop the container after testing
+docker-compose -f Frends.As2.SendMessage.Tests/docker/docker-compose.yaml down
 
 ### Create a NuGet package
 
