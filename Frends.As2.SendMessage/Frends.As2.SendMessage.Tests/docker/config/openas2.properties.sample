@@ -1,12 +1,12 @@
 storageBaseDir=/opt/MyCompanyAS2/data
 # Where to find the partnerships XML file
 partnership_file=$properties.storageBaseDir$/partnerships.xml
-# the path to and name ofthe keystore fiule containing the AS2 certificates
+# the path to and name of the keystore file containing the AS2 certificates
 as2_keystore=$properties.storageBaseDir$/as2_certs.p12
 # The password for the AS2 certificates keystore
 as2_keystore_password=032scali
 # The time between checks for a changed AS2 keystore file
-as2_keystore.refesh_interval=300
+as2_keystore.refresh_interval=300
 # The keystore for SSL certificates if SSL is enabled
 ssl_keystore=$properties.storageBaseDir$/ssl_certs.jks
 # The SSL certificates keystore password
@@ -107,7 +107,7 @@ pollerConfigBase.interval=5
 pollerConfigBase.defaults=sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$
 pollerConfigBase.sendfilename=true
 pollerConfigBase.mimetype=application/EDI-X12
-pollerConfigBase.process_files_in_paralllel=false
+pollerConfigBase.process_files_in_parallel=false
 pollerConfigBase.max_parallel_files=20
 # The time between checks for a changed partnerships.xml file for auto reload.
 partnerships.polling.interval=120

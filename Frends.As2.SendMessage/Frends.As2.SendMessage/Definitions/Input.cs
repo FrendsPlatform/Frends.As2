@@ -22,7 +22,7 @@ public class Input
     public string ReceiverAs2Id { get; set; }
 
     /// <summary>
-    /// Id of the company that will receive the message.
+    /// Subject of the AS2 message.
     /// </summary>
     /// <example>Subject of the message</example>
     [DisplayFormat(DataFormatString = "Text")]

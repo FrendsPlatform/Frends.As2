@@ -11,14 +11,14 @@ public class Connection
     /// <summary>
     /// Connection string to AS2 server
     /// </summary>
-    /// <example>Host=127.0.0.1;Port=5432</example>
+    /// <example>https://as2.example.com/as2</example>
     [DisplayFormat(DataFormatString = "Text")]
     public string As2EndpointUrl { get; set; }
 
     /// <summary>
     /// Password for the sender certificate.
     /// </summary>
-    /// <example>Host=127.0.0.1;Port=5432</example>
+    /// <example>mySecurePassword123</example>
     [DisplayFormat(DataFormatString = "Text")]
     [PasswordPropertyText]
     public string SenderCertificatePassword { get; set; }
@@ -31,7 +31,7 @@ public class Connection
     public string SenderCertificatePath { get; set; }
 
     /// <summary>
-    /// Path to the signer certificate file in .pfx format.
+    /// Path to the receiver certificate file in .pfx format.
     /// </summary>
     /// <example>C:\Document\receiver_cert.pfx</example>
     [DisplayFormat(DataFormatString = "Text")]

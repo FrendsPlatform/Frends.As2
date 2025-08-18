@@ -3,13 +3,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Frends.As2.SendMessage.Definitions;
 using Frends.As2.SendMessage.Helpers;
 using Org.BouncyCastle.Cms;
-using Org.BouncyCastle.X509;
 
 namespace Frends.As2.SendMessage;
 
@@ -26,7 +24,7 @@ public static class As2
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>object { bool Success, string Output, object Error { string Message, dynamic AdditionalInfo } }</returns>
+    /// <returns>object { bool Success, string MessageId, object Error { string Message, dynamic AdditionalInfo } }</returns>
     public static async Task<Result> SendMessage(
         [PropertyTab] Input input,
         [PropertyTab] Connection connection,

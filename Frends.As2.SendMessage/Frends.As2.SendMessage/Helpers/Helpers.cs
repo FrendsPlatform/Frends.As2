@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
@@ -82,6 +83,8 @@ public static class Helpers
         }
 
         var alias = store.Aliases.FirstOrDefault(store.IsKeyEntry);
+        if (alias is null) throw new InvalidOperationException("No private key found in the PFX certificate.");
+
         var privateKey = store.GetKey(alias).Key;
         var cert = store.GetCertificate(alias).Certificate;
 

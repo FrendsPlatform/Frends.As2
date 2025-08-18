@@ -81,7 +81,7 @@
                pollerConfigBase.defaults="sender.as2_id=$partnership.sender.as2_id$, receiver.as2_id=$partnership.receiver.as2_id$"
                pollerConfigBase.sendfilename="true"
                pollerConfigBase.mimetype="application/EDI-X12"
-               pollerConfigBase.process_files_in_paralllel="false"
+               pollerConfigBase.process_files_in_parallel="false"
                pollerConfigBase.max_parallel_files="20"
                partnerships.polling.interval="120"
                messages.enabled="true"
