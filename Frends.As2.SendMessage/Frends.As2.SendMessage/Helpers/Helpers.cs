@@ -26,7 +26,7 @@ public static class Helpers
     /// <param name="signingCertPassword">password for certificate</param>
     /// <param name="algorithmOid">used algorithm Oid</param>
     /// <returns>byte[]</returns>
-    public static byte[] Sign(this byte[] data, string signingCertPath, string signingCertPassword, string algorithmOid)
+    public static SignedCms Sign(this byte[] data, string signingCertPath, string signingCertPassword, string algorithmOid)
     {
         var signingCert = new X509Certificate2(signingCertPath, signingCertPassword);
 
@@ -37,6 +37,26 @@ public static class Helpers
             DigestAlgorithm = new Oid(algorithmOid),
         };
         signedCms.ComputeSignature(cmsSigner);
+        return signedCms;
+        // return signedCms.ContentInfo.Content;
+    }
+
+    /// <summary>
+    /// Extension method to verify a signed message using a CA certificate.
+    /// </summary>
+    /// <param name="data">bytes to verify</param>
+    /// <param name="caCertPath">path to file</param>
+    /// <returns>byte[]</returns>
+    public static byte[] VerifySignature(
+        this byte[] data,
+        string caCertPath)
+    {
+        var caCert = new X509Certificate2(caCertPath);
+        var signedCms = new SignedCms();
+        signedCms.Decode(data);
+
+        var extraStore = new X509Certificate2Collection { caCert };
+        signedCms.CheckSignature(extraStore, true);
         return signedCms.ContentInfo.Content;
     }
 
@@ -102,25 +122,6 @@ public static class Helpers
 
         var decrypted = recipient.GetContent(privateKey);
         return decrypted;
-    }
-
-    /// <summary>
-    /// Extension method to verify a signed message using a CA certificate.
-    /// </summary>
-    /// <param name="data">bytes to verify</param>
-    /// <param name="caCertPath">path to file</param>
-    /// <returns>byte[]</returns>
-    public static byte[] VerifySignature(
-        this byte[] data,
-        string caCertPath)
-    {
-        var caCert = new X509Certificate2(caCertPath);
-        var signedCms = new SignedCms();
-        signedCms.Decode(data);
-
-        var extraStore = new X509Certificate2Collection { caCert };
-        signedCms.CheckSignature(extraStore, true);
-        return signedCms.ContentInfo.Content;
     }
 
     /// <summary>

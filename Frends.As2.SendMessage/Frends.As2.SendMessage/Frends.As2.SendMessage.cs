@@ -35,16 +35,17 @@ public static class As2
         {
             using HttpClient httpClient = new();
             var data = Helpers.Helpers.BuildMimeBody(input.MessageFilePath);
-           
+
             if (options.SignMessage)
             {
-                data = data.Sign(
+                var signedCms = data.Sign(
                     connection.SenderCertificatePath,
                     connection.SenderCertificatePassword,
                     CmsSignedGenerator.DigestSha512);
+                data = signedCms.ContentInfo.Content;
             }
 
-             var precalulatedMic = Helpers.Helpers.ComputeMic(data);
+            var precalculatedMic = Helpers.Helpers.ComputeMic(data);
 
             if (options.EncryptMessage)
             {
@@ -81,7 +82,7 @@ public static class As2
             var micLine = Regex.Match(responseContent, @"^Received-Content-MIC: .*$", RegexOptions.Multiline).Value;
             var returnedMic = micLine.Replace("Received-Content-MIC: ", string.Empty).Trim();
 
-            if (precalulatedMic != returnedMic) throw new Exception("Invalid MIC received from server.");
+            if (precalculatedMic != returnedMic) throw new Exception("Invalid MIC received from server.");
             return new Result { Success = response.IsSuccessStatusCode, Error = null, MessageId = messageId };
         }
         catch (Exception e)
