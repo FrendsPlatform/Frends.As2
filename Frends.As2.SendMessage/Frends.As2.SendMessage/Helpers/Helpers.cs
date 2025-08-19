@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Org.BouncyCastle.Cms;
@@ -36,7 +37,7 @@ public static class Helpers
             DigestAlgorithm = new Oid(algorithmOid),
         };
         signedCms.ComputeSignature(cmsSigner);
-        return signedCms.Encode();
+        return signedCms.ContentInfo.Content;
     }
 
     /// <summary>
@@ -120,5 +121,45 @@ public static class Helpers
         var extraStore = new X509Certificate2Collection { caCert };
         signedCms.CheckSignature(extraStore, true);
         return signedCms.ContentInfo.Content;
+    }
+
+    /// <summary>
+    /// Computes the Message Integrity Check (MIC) for the given data using SHA-512.
+    /// </summary>
+    /// <param name="data">data to compute from</param>
+    /// <returns>mic value with algorithm used</returns>
+    public static string ComputeMic(byte[] data)
+    {
+        var hash = SHA512.HashData(data);
+        return Convert.ToBase64String(hash) + ", sha512";
+    }
+
+    /// <summary>
+    /// Builds a MIME body for the given file path, including headers for content type, disposition, and transfer encoding.
+    /// </summary>
+    /// <param name="filePath">path to the file with content</param>
+    /// <returns>bytes of the body</returns>
+    public static byte[] BuildMimeBody(string filePath)
+    {
+        var fileName = Path.GetFileName(filePath);
+        var fileBytes = File.ReadAllBytes(filePath);
+
+        var contentType = "application/octet-stream";
+        if (fileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+            contentType = "text/plain";
+
+        var builder = new StringBuilder();
+        builder.AppendLine($"Content-Type: {contentType}");
+        builder.AppendLine($"Content-Disposition: attachment; filename=\"{fileName}\"");
+        builder.AppendLine("Content-Transfer-Encoding: binary");
+        builder.AppendLine();
+
+        var headerBytes = Encoding.ASCII.GetBytes(builder.ToString());
+
+        var result = new byte[headerBytes.Length + fileBytes.Length];
+        Buffer.BlockCopy(headerBytes, 0, result, 0, headerBytes.Length);
+        Buffer.BlockCopy(fileBytes, 0, result, headerBytes.Length, fileBytes.Length);
+
+        return result;
     }
 }

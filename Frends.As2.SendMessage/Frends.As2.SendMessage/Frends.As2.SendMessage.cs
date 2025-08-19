@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
-using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Frends.As2.SendMessage.Definitions;
@@ -34,8 +34,8 @@ public static class As2
         try
         {
             using HttpClient httpClient = new();
-            var data = await File.ReadAllBytesAsync(input.MessageFilePath, cancellationToken);
-
+            var data = Helpers.Helpers.BuildMimeBody(input.MessageFilePath);
+           
             if (options.SignMessage)
             {
                 data = data.Sign(
@@ -43,6 +43,8 @@ public static class As2
                     connection.SenderCertificatePassword,
                     CmsSignedGenerator.DigestSha512);
             }
+
+             var precalulatedMic = Helpers.Helpers.ComputeMic(data);
 
             if (options.EncryptMessage)
             {
@@ -54,7 +56,7 @@ public static class As2
 
             var contentType = connection.ContentTypeHeader;
             if (options.SignMessage && options.EncryptMessage)
-                contentType = "application/pkcs7-mime; smime-type=enveloped-data; name=\"smime.p7m\"";
+                contentType = "application/pkcs7-mime; smime-type=enveloped-data";
             else if (options.SignMessage)
                 contentType = "application/pkcs7-mime; smime-type=signed-data";
             else if (options.EncryptMessage)
@@ -72,9 +74,14 @@ public static class As2
             content.Headers.Add("Disposition-Notification-To", connection.MdnReceiver);
             content.Headers.Add(
                 "Disposition-Notification-Options",
-                "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha512");
+                "signed-receipt-protocol=required, pkcs7-signature; signed-receipt-micalg=required, sha512");
 
             var response = await httpClient.PostAsync(connection.As2EndpointUrl, content, cancellationToken);
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            var micLine = Regex.Match(responseContent, @"^Received-Content-MIC: .*$", RegexOptions.Multiline).Value;
+            var returnedMic = micLine.Replace("Received-Content-MIC: ", string.Empty).Trim();
+
+            if (precalulatedMic != returnedMic) throw new Exception("Invalid MIC received from server.");
             return new Result { Success = response.IsSuccessStatusCode, Error = null, MessageId = messageId };
         }
         catch (Exception e)

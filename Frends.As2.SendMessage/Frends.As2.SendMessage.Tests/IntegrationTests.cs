@@ -28,18 +28,49 @@ public class IntegrationTests
         MdnReceiver = "usr@example.com",
     };
 
-    private readonly Options options = new()
+    private static Options Options => new()
     {
         ThrowErrorOnFailure = false,
         ErrorMessageOnFailure = null,
-        SignMessage = true,
-        EncryptMessage = true,
+        SignMessage = false,
+        EncryptMessage = false,
     };
 
     [Test]
-    public async Task ShouldSendMessage()
+    public async Task ShouldSendPlainMessage()
     {
-        var result = await As2.SendMessage(input, connection, options, CancellationToken.None);
+        var result = await As2.SendMessage(input, connection, Options, CancellationToken.None);
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task ShouldSendSignedMessage()
+    {
+        var opt = Options;
+        opt.SignMessage = true;
+
+        var result = await As2.SendMessage(input, connection, opt, CancellationToken.None);
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task ShouldSendEncryptedMessage()
+    {
+        var opt = Options;
+        opt.EncryptMessage = true;
+
+        var result = await As2.SendMessage(input, connection, opt, CancellationToken.None);
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task ShouldSendSignedAndEncryptedMessage()
+    {
+        var opt = Options;
+        opt.SignMessage = true;
+        opt.EncryptMessage = true;
+
+        var result = await As2.SendMessage(input, connection, opt, CancellationToken.None);
         Assert.That(result.Success, Is.True);
     }
 }
