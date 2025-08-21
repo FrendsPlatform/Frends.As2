@@ -150,10 +150,14 @@ public static class Helpers
             contentType = "text/plain";
 
         var builder = new StringBuilder();
-        builder.AppendLine($"Content-Type: {contentType}");
-        builder.AppendLine($"Content-Disposition: attachment; filename=\"{fileName}\"");
-        builder.AppendLine("Content-Transfer-Encoding: binary");
-        builder.AppendLine();
+
+        // AS2 expects CRLF line endings whereas StringBuilder will use the dynamic
+        // Environment.NewLine variable. Instead of AppendLine, we thus use Append and
+        // ensure CRLF line endings.
+        builder.Append($"Content-Type: {contentType}\r\n");
+        builder.Append($"Content-Disposition: attachment; filename=\"{fileName}\"\r\n");
+        builder.Append("Content-Transfer-Encoding: binary\r\n");
+        builder.Append("\r\n"); // Blank line to separate headers from content
 
         var headerBytes = Encoding.ASCII.GetBytes(builder.ToString());
 
