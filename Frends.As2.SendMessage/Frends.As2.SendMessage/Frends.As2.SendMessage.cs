@@ -42,7 +42,7 @@ public static class As2
                     connection.SenderCertificatePath,
                     connection.SenderCertificatePassword,
                     CmsSignedGenerator.DigestSha512);
-                data = signedCms.ContentInfo.Content;
+                data = signedCms;
             }
 
             var precalculatedMic = Helpers.Helpers.ComputeMic(data);

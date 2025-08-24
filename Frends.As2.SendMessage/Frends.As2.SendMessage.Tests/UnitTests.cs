@@ -30,8 +30,7 @@ public class UnitTests
     {
         var input = new byte[] { 1, 2, 3, 4, 5 };
         var signed = input.Sign(signingPfxPath, "sender123", CmsSignedGenerator.DigestSha512);
-        var signedContent = signed.Encode();
-        var verified = signedContent.VerifySignature(signingCertPath);
+        var verified = signed.VerifySignature(signingCertPath);
         Assert.That(verified, Is.EqualTo(input));
     }
 }
