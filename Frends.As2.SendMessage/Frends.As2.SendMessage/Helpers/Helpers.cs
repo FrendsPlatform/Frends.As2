@@ -26,7 +26,7 @@ public static class Helpers
     /// <param name="signingCertPassword">password for certificate</param>
     /// <param name="algorithmOid">used algorithm Oid</param>
     /// <returns>byte[]</returns>
-    public static SignedCms Sign(this byte[] data, string signingCertPath, string signingCertPassword, string algorithmOid)
+    public static byte[] Sign(this byte[] data, string signingCertPath, string signingCertPassword, string algorithmOid)
     {
         var signingCert = new X509Certificate2(signingCertPath, signingCertPassword);
 
@@ -37,8 +37,7 @@ public static class Helpers
             DigestAlgorithm = new Oid(algorithmOid),
         };
         signedCms.ComputeSignature(cmsSigner);
-        return signedCms;
-        // return signedCms.ContentInfo.Content;
+        return signedCms.Encode();
     }
 
     /// <summary>
@@ -158,6 +157,8 @@ public static class Helpers
         builder.Append($"Content-Disposition: attachment; filename=\"{fileName}\"\r\n");
         builder.Append("Content-Transfer-Encoding: binary\r\n");
         builder.Append("\r\n"); // Blank line to separate headers from content
+
+        var foo = builder.ToString();
 
         var headerBytes = Encoding.ASCII.GetBytes(builder.ToString());
 
