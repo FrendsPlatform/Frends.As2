@@ -38,11 +38,10 @@ public static class As2
 
             if (options.SignMessage)
             {
-                var signedCms = data.Sign(
+                data = data.Sign(
                     connection.SenderCertificatePath,
                     connection.SenderCertificatePassword,
                     CmsSignedGenerator.DigestSha512);
-                data = signedCms;
             }
 
             var precalculatedMic = Helpers.Helpers.ComputeMic(data);

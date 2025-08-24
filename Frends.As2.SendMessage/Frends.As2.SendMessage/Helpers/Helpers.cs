@@ -158,8 +158,6 @@ public static class Helpers
         builder.Append("Content-Transfer-Encoding: binary\r\n");
         builder.Append("\r\n"); // Blank line to separate headers from content
 
-        var foo = builder.ToString();
-
         var headerBytes = Encoding.ASCII.GetBytes(builder.ToString());
 
         var result = new byte[headerBytes.Length + fileBytes.Length];
