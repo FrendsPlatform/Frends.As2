@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
@@ -7,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Frends.As2.SendMessage.Definitions;
 using Frends.As2.SendMessage.Helpers;
+using nsoftware.async.IPWorksEDI;
 using Org.BouncyCastle.Cms;
 
 namespace Frends.As2.SendMessage;
@@ -25,7 +28,7 @@ public static class As2
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
     /// <returns>object { bool Success, string MessageId, object Error { string Message, dynamic AdditionalInfo } }</returns>
-    public static async Task<Result> SendMessage(
+    public static async Task<Result> SendMessage0(
         [PropertyTab] Input input,
         [PropertyTab] Connection connection,
         [PropertyTab] Options options,
@@ -83,6 +86,57 @@ public static class As2
 
             if (precalculatedMic != returnedMic) throw new Exception("Invalid MIC received from server.");
             return new Result { Success = response.IsSuccessStatusCode, Error = null, MessageId = messageId };
+        }
+        catch (Exception e)
+        {
+            return ErrorHandler.Handle(e, options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
+        }
+    }
+
+
+    public static async Task<Result> SendMessage(
+        [PropertyTab] Input input,
+        [PropertyTab] Connection connection,
+        [PropertyTab] Options options,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            AS2Sender as2 = new AS2Sender();
+            //await as2.Config(conf"VerifyReceiptMIC=true", cancellationToken);
+            as2.AS2From = input.SenderAs2Id;
+            as2.AS2To = input.ReceiverAs2Id;
+            as2.Subject = input.Subject;
+            as2.URL = connection.As2EndpointUrl;
+            as2.MDNTo = connection.MdnReceiver;
+            as2.MessageId = Guid.NewGuid().ToString();
+            if (options.SignMessage)
+            {
+                // The default password for the provided .pfx private key cert is 'test'
+                string password = connection.SenderCertificatePassword;
+                as2.SigningCert = new Certificate(CertStoreTypes.cstAuto, connection.SenderCertificatePath, password, "*");
+            }
+
+            if (options.EncryptMessage || !string.IsNullOrEmpty(connection.ReceiverCertificatePath))
+            {
+                as2.RecipientCerts.Add(new Certificate(connection.ReceiverCertificatePath));
+            }
+
+            as2.EDIData = new EDIData();
+            as2.EDIData.EDIType = "text/plain";
+            as2.EDIData.Data = File.ReadAllText(input.MessageFilePath);
+            as2.LogDirectory = "logs";
+            try
+            {
+                await as2.Post(cancellationToken);
+                return new Result { Success = true, Error = null, MessageId = as2.MessageId };
+            }
+            catch (IPWorksEDIException e)
+            {
+                Console.WriteLine("Sending failed.");
+                Console.WriteLine("Reason: " + e.Message);
+                throw;
+            }
         }
         catch (Exception e)
         {

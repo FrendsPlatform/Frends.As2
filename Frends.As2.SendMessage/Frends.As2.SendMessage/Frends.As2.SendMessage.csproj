@@ -19,6 +19,7 @@
     <ItemGroup>
         <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.1" />
         <PackageReference Include="MimeKit" Version="4.13.0" />
+        <PackageReference Include="nsoftware.IPWorksEDI" Version="24.0.9249" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
