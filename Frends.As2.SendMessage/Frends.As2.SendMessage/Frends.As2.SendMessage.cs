@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -129,7 +130,17 @@ public static class As2
             try
             {
                 await as2.Post(cancellationToken);
-                return new Result { Success = true, Error = null, MessageId = as2.MessageId };
+                var mdn = as2.MDNReceipt;
+                return new Result
+                {
+                    Success = true,
+                    MessageId = as2.MessageId,
+                    MDNStatus = mdn.MDN.Split("\r\n")
+                    .FirstOrDefault(l => l.StartsWith("Disposition:", StringComparison.OrdinalIgnoreCase))?.Trim(),
+                    MDNMessage = mdn.Message,
+                    RawMDN = mdn.Content,
+                    MDNIntegrityCheck = mdn.MICValue,
+                };
             }
             catch (IPWorksEDIException e)
             {
