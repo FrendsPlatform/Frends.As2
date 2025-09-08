@@ -1,0 +1,40 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Frends.As2.ValidateAndParsePayload.Definitions
+{
+    public class MdnData
+    {
+        /// <summary>
+        /// MDN headers returned by the AS2Receiver.
+        /// </summary>
+        /// <example>"Content-Type: multipart/signed; protocol=..."</example>
+        public string Headers { get; set; }
+
+        /// <summary>
+        /// Human-readable MDN message part.
+        /// </summary>
+        /// <example>"The message has been received and processed successfully."</example>
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Raw MDN content (MIME format).
+        /// </summary>
+        public string Content { get; set; }
+
+        /// <summary>
+        /// Raw MDN content as bytes.
+        /// </summary>
+        public byte[] ContentB { get; set; }
+
+        /// <summary>
+        /// Message integrity check (MIC) value from the MDN.
+        /// </summary>
+        /// <example>"abc123xyz==, sha-256"</example>
+        public string MicValue { get; set; }
+    }
+
+}
