@@ -10,12 +10,8 @@ using NUnit.Framework;
 namespace Frends.As2.SendMessage.Tests;
 
 /// <summary>
-/// Start the OpenAS2 Docker environment first:
-/// 
-/// docker-compose up -d
-/// 
+/// Start the OpenAS2 Docker environment first: docker-compose up -d.
 /// </summary>
-
 [TestFixture]
 public class IntegrationTests
 {
@@ -134,7 +130,6 @@ public class IntegrationTests
         Assert.That(rawMdn, Does.Contain("Disposition:"), "MDN should contain Disposition header");
     }
 
-
     [Test]
     public async Task ShouldSendEncryptedMessageWithAsyncMdn()
     {
@@ -226,7 +221,7 @@ public class IntegrationTests
         Assert.That(result.Error.Message, Does.Contain("Could not find a part of the path"));
     }
 
-    private async Task<string?> StartMdnReceiver(CancellationToken token)
+    private async Task<string> StartMdnReceiver(CancellationToken token)
     {
         var listener = new HttpListener();
         listener.Prefixes.Add("http://+:9090/mdn-receiver/");
@@ -253,11 +248,11 @@ public class IntegrationTests
         }
     }
 
-    private async Task<HttpListenerContext?> GetContextAsync(HttpListener listener, CancellationToken token)
+    private async Task<HttpListenerContext> GetContextAsync(HttpListener listener, CancellationToken token)
     {
         var contextTask = listener.GetContextAsync();
 
-        var tcs = new TaskCompletionSource<HttpListenerContext?>();
+        var tcs = new TaskCompletionSource<HttpListenerContext>();
 
         using (token.Register(() => tcs.TrySetResult(null)))
         {
@@ -276,11 +271,10 @@ public class IntegrationTests
             {
                 return null;
             }
-            catch (HttpListenerException ex) when (ex.ErrorCode == 995) 
+            catch (HttpListenerException ex) when (ex.ErrorCode == 995)
             {
                 return null;
             }
         }
     }
-
 }

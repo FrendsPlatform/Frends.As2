@@ -23,7 +23,7 @@ public static class As2
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>object { bool Success, string MessageId, bool IsMdnPending, string MDNStatus, string MDNMessage, string RawMDN, string MDNIntegrityCheck, object Error { string Message, dynamic AdditionalInfo } }</returns>
+    /// <returns>object { bool Success, string PartnerResponse, string MessageId, bool IsMdnPending, string MdnStatus, string MdnMessage, string MdnIntegrityCheck, object Error { string Message, dynamic AdditionalInfo } }</returns>
     public static async Task<Result> SendMessage(
         [PropertyTab] Input input,
         [PropertyTab] Connection connection,
