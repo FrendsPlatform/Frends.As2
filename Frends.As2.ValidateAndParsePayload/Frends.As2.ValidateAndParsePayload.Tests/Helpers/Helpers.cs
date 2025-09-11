@@ -1,20 +1,18 @@
-﻿using nsoftware.async.IPWorksEDI;
-using NUnit.Framework.Constraints;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Frends.As2.ValidateAndParsePayload.Definitions;
+using nsoftware.async.IPWorksEDI;
 
 namespace Frends.As2.ValidateAndParsePayload.Tests.Helpers
 {
-
-    internal class SendMessage
+    internal class Helpers
     {
-        public static async Task<SenderResult> TestSendMessage(SenderInput input, SenderConnection connection, SenderOptions options, CancellationToken cancellationToken)
+        public static async Task<SenderResult> SendMessage(SenderInput input, SenderConnection connection, SenderOptions options, CancellationToken cancellationToken)
         {
             try
             {
@@ -25,6 +23,21 @@ namespace Frends.As2.ValidateAndParsePayload.Tests.Helpers
                 as2.URL = connection.As2EndpointUrl;
                 as2.MDNTo = connection.MdnReceiver;
                 as2.MessageId = Guid.NewGuid().ToString();
+
+                if (input.AdditionalHeaders != null)
+                {
+                    foreach (var header in input.AdditionalHeaders)
+                    {
+                        if (header.Key.Equals("AS2-From", StringComparison.OrdinalIgnoreCase) ||
+                            header.Key.Equals("AS2-To", StringComparison.OrdinalIgnoreCase) ||
+                            header.Key.Equals("Message-ID", StringComparison.OrdinalIgnoreCase) ||
+                            header.Key.Equals("Subject", StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        await as2.SetRequestHeader(header.Key, header.Value);
+                    }
+                }
+
                 if (options.SignMessage)
                 {
                     string password = connection.SenderCertificatePassword;
@@ -43,7 +56,17 @@ namespace Frends.As2.ValidateAndParsePayload.Tests.Helpers
                 try
                 {
                     await as2.Post(cancellationToken);
-                    return new SenderResult { Success = true, MessageId = as2.MessageId };
+                    var mdn = as2.MDNReceipt;
+                    return new SenderResult
+                    {
+                        Success = true,
+                        MessageId = as2.MessageId,
+                        MDNStatus = mdn.MDN.Split("\r\n")
+                        .FirstOrDefault(l => l.StartsWith("Disposition:", StringComparison.OrdinalIgnoreCase))?.Trim(),
+                        MDNMessage = mdn.Message,
+                        RawMDN = mdn.Content,
+                        MDNIntegrityCheck = mdn.MICValue,
+                    };
                 }
                 catch (IPWorksEDIException e)
                 {
@@ -59,45 +82,58 @@ namespace Frends.As2.ValidateAndParsePayload.Tests.Helpers
         }
     }
 
-    public class SenderInput
+    internal class SenderInput
     {
         public string SenderAs2Id { get; set; }
+
         public string ReceiverAs2Id { get; set; }
+
         public string Subject { get; set; }
+
         public string MessageFilePath { get; set; }
+
+        [DisplayFormat(DataFormatString = "Text")]
+        public Dictionary<string, string> AdditionalHeaders { get; set; } = new();
     }
 
-    public class SenderConnection
+    internal class SenderConnection
     {
         public string As2EndpointUrl { get; set; }
+
         public string SenderCertificatePath { get; set; }
+
         public string SenderCertificatePassword { get; set; }
+
         public string ReceiverCertificatePath { get; set; }
+
         public string ContentTypeHeader { get; set; }
+
         public string MdnReceiver { get; set; }
     }
 
-    public class SenderOptions
+    internal class SenderOptions
     {
         public bool ThrowErrorOnFailure { get; set; }
+
         public bool SignMessage { get; set; }
+
         public bool EncryptMessage { get; set; }
     }
 
-    public class SenderResult
+    internal class SenderResult
     {
-        /// <summary>
-        /// Indicates if the task completed successfully.
-        /// </summary>
-        /// <example>true</example>
         public bool Success { get; set; }
 
-        /// <summary>
-        /// ID of a sent message.
-        /// </summary>
-        /// <example>123</example>
+        public Error Error { get; set; }
+
         public string MessageId { get; set; }
+
+        public string MDNStatus { get; set; }
+
+        public string RawMDN { get; set; }
+
+        public string MDNMessage { get; set; }
+
+        public string MDNIntegrityCheck { get; set; }
     }
-
-
 }

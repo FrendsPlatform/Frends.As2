@@ -25,4 +25,13 @@
         </PackageReference>
     </ItemGroup>
 
+	<ItemGroup>
+		<None Include="certs\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Include=".\testData\mess.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 </Project>

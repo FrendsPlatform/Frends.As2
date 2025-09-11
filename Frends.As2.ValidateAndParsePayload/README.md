@@ -1,6 +1,6 @@
 # Frends.As2.ValidateAndParsePayload
 
-Description of what the Task will do.
+Task to validate an incoming AS2 message, extracts the EDI payload, and generates an MDN receipt.
 
 [![ValidateAndParsePayload_build](https://github.com/FrendsPlatform/Frends.As2/actions/workflows/ValidateAndParsePayload_build_and_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.As2/actions/workflows/ValidateAndParsePayload_build_and_test_on_main.yml)
 ![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.As2/Frends.As2.ValidateAndParsePayload|main)

@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Frends.As2.ValidateAndParsePayload.Definitions;
@@ -16,7 +18,7 @@ namespace Frends.As2.ValidateAndParsePayload;
 public static class As2
 {
     /// <summary>
-    /// As2es the input string the specified number of times.
+    /// Task to validate an incoming AS2 message, extracts the EDI payload, and generates an MDN receipt.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-As2-ValidateAndParsePayload)
     /// </summary>
     /// <param name="input">Essential parameters.</param>
@@ -25,9 +27,9 @@ public static class As2
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
     /// <returns>object { bool Success, string Output, object Error { string Message, dynamic AdditionalInfo } }</returns>
     public static async Task<Result> ValidateAndParsePayload(
-        [PropertyTab] Input input,
-        [PropertyTab] Connection connection,
-        [PropertyTab] Options options,
+        Input input,
+        Connection connection,
+        Options options,
         CancellationToken cancellationToken)
     {
         try
@@ -41,15 +43,24 @@ public static class As2
 
             var as2 = new AS2Receiver();
 
-            string requestHeaders = $"AS2-From: {input.SenderAs2Id}\r\n";
-            requestHeaders += $"AS2-To: {input.ReceiverAs2Id}\r\n";
-            requestHeaders += $"Message-ID: {input.MessageId}\r\n";
-
-            as2.RequestHeadersString = requestHeaders;
-
-            using (var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(input.RawMessage)))
+            // Extract headers and body from raw message (like the documentation example)
+            var headerEndIndex = input.RawMessage.IndexOf("\r\n\r\n");
+            if (headerEndIndex <= 0)
             {
-                await as2.SetRequestStream(ms, cancellationToken);
+                throw new Exception("Invalid AS2 message format - no header/body separator found");
+            }
+
+            // Set headers exactly like the documentation example
+            string inputHeaders = input.RawMessage.Substring(0, headerEndIndex);
+            as2.RequestHeadersString = inputHeaders;
+
+            // Get just the body content for the stream
+            string bodyContent = input.RawMessage.Substring(headerEndIndex + 4);
+            var bodyBytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(bodyContent);
+
+            using (var ms = new MemoryStream(bodyBytes))
+            {
+                await as2.SetRequestStream(ms);
 
                 if (connection.RequireSigned && !string.IsNullOrEmpty(connection.PartnerCertificatePath))
                 {
@@ -67,12 +78,13 @@ public static class As2
                         "*");
                 }
 
-                await as2.ProcessRequest(cancellationToken);
+                await as2.ProcessRequest();
+
+                if (!as2.AS2From.Equals(input.SenderAs2Id, StringComparison.OrdinalIgnoreCase))
+                    throw new Exception($"Sender AS2 ID mismatch: {as2.AS2From} != {input.SenderAs2Id}");
 
                 if (!as2.AS2To.Equals(input.ReceiverAs2Id, StringComparison.OrdinalIgnoreCase))
-                {
-                    throw new Exception($"The EDI message is meant for '{as2.AS2To}' not for us '{input.ReceiverAs2Id}'");
-                }
+                    throw new Exception($"Receiver AS2 ID mismatch: {as2.AS2To} != {input.ReceiverAs2Id}");
 
                 var payload = as2.EDIData?.Data != null
                     ? System.Text.Encoding.UTF8.GetBytes(as2.EDIData.Data)
