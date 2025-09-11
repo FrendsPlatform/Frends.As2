@@ -34,4 +34,10 @@ public class Input
     /// <example>C:\Document\message.txt</example>
     [DisplayFormat(DataFormatString = "Text")]
     public string MessageFilePath { get; set; }
+
+    /// <summary>
+    /// Optional additional HTTP headers to send with the AS2 message.
+    /// </summary>
+    /// <example>[{ "Name": "X-ApiKey", "Value": "my-api-key" }]</example>
+    public Header[] AdditionalHeaders { get; set; }
 }

@@ -12,10 +12,12 @@ public class Result
     public bool Success { get; set; }
 
     /// <summary>
-    /// Error that occurred during task execution.
+    /// The transport/MDN response from the AS2 partner:
+    /// - Sync mode: full multipart/signed MDN content
+    /// - Async mode: the immediate response from the POST (e.g., "200 OK")
     /// </summary>
-    /// <example>object { string Message, object { Exception Exception } AdditionalInfo }</example>
-    public Error Error { get; set; }
+    /// <example>200 OK</example>
+    public string PartnerResponse { get; set; }
 
     /// <summary>
     /// ID of a sent message.
@@ -27,22 +29,32 @@ public class Result
     /// Status of the MDN response.
     /// </summary>
     /// <example>ReceivedValid</example>
-    public string MDNStatus { get; set; }
-
-    /// <summary>
-    /// Raw MDN data returned by the recipient.
-    /// </summary>
-    /// <example>"Content-Type: multipart/signed; ..."</example>
-    public string RawMDN { get; set; }
+    public string MdnStatus { get; set; }
 
     /// <summary>
     /// Human-readable message included in the MDN.
     /// </summary>
     /// <example>The message was successfully received and processed.</example>
-    public string MDNMessage { get; set; }
+    public string MdnMessage { get; set; }
 
     /// <summary>
     /// Message Integrity Check (MIC) value reported in the MDN.
     /// </summary>
-    public string MDNIntegrityCheck { get; set; }
+    /// <example>
+    /// "7v7F+fQbH4lD8bKGJTbXzWWcUlI=, sha1"
+    /// </example>
+    public string MdnIntegrityCheck { get; set; }
+
+    /// <summary>
+    /// Indicates whether the MDN delivery is pending (true for async MDN mode, false for sync MDN mode).
+    /// When true, the MDN will be delivered separately to the AsyncMdnUrl endpoint.
+    /// </summary>
+    /// <example>false</example>
+    public bool IsMdnPending { get; set; }
+
+    /// <summary>
+    /// Error that occurred during task execution.
+    /// </summary>
+    /// <example>object { string Message, object { Exception Exception } AdditionalInfo }</example>
+    public Error Error { get; set; }
 }
