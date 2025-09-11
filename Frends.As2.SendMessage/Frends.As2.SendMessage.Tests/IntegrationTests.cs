@@ -9,9 +9,7 @@ using NUnit.Framework;
 
 namespace Frends.As2.SendMessage.Tests;
 
-/// <summary>
-/// Start the OpenAS2 Docker environment first: docker-compose up -d.
-/// </summary>
+// Start the OpenAS2 Docker environment first: docker-compose up -d.
 [TestFixture]
 public class IntegrationTests
 {
@@ -20,7 +18,7 @@ public class IntegrationTests
         SenderAs2Id = "Sender",
         ReceiverAs2Id = "Receiver",
         Subject = "Test Connection",
-        MessageFilePath = Path.Combine(AppContext.BaseDirectory, "testData", "mess.txt"),
+        MessageFilePath = null,
     };
 
     private static Connection connection = new()
@@ -40,6 +38,29 @@ public class IntegrationTests
         ThrowErrorOnFailure = false,
         ErrorMessageOnFailure = null,
     };
+
+    private string _testDataDir = Path.Combine(AppContext.BaseDirectory, "testData");
+    private string _testFilePath;
+    private string _currentTestId;
+
+    [SetUp]
+    public void Setup()
+    {
+        Directory.CreateDirectory(_testDataDir);
+        _currentTestId = Guid.NewGuid().ToString("N");
+        _testFilePath = Path.Combine(_testDataDir, $"message_{_currentTestId}.txt");
+
+        File.WriteAllText(_testFilePath, $"AS2_TEST_{_currentTestId}: This is a unique test message at {DateTime.UtcNow:O}");
+
+        input.MessageFilePath = _testFilePath;
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        if (Directory.Exists(_testDataDir))
+            Directory.Delete(_testDataDir, true);
+    }
 
     [Test]
     public async Task ShouldSendPlainMessage()
