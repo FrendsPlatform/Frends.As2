@@ -79,7 +79,7 @@ public static class As2
                 as2.SigningCert = new Certificate(CertStoreTypes.cstAuto, connection.SenderCertificatePath, password, "*");
             }
 
-            if (connection.EncryptMessage || !string.IsNullOrEmpty(connection.ReceiverCertificatePath))
+            if (connection.EncryptMessage)
             {
                 as2.RecipientCerts.Add(new Certificate(connection.ReceiverCertificatePath));
             }
