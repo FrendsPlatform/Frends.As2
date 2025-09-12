@@ -44,7 +44,7 @@ namespace Frends.As2.ValidateAndParsePayload.Tests.Helpers
                     as2.SigningCert = new Certificate(CertStoreTypes.cstAuto, connection.SenderCertificatePath, password, "*");
                 }
 
-                if (options.EncryptMessage || !string.IsNullOrEmpty(connection.ReceiverCertificatePath))
+                if (options.EncryptMessage)
                 {
                     as2.RecipientCerts.Add(new Certificate(connection.ReceiverCertificatePath));
                 }
@@ -75,9 +75,13 @@ namespace Frends.As2.ValidateAndParsePayload.Tests.Helpers
                     throw;
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw new Exception($"Error in SendMessage: {e.Message}", e);
+                return new SenderResult
+                {
+                    Success = false,
+                    Error = new Error { Message = ex.Message },
+                };
             }
         }
     }

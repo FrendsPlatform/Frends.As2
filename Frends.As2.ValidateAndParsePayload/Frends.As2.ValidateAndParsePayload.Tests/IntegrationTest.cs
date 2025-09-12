@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -19,8 +21,10 @@ public class IntegrationTest
     private string _testServerUrl = "http://localhost:8081/as2";
     private string _testFilePath;
     private string _currentTestId;
-    private string _lastCapturedRawMessage;
     private CancellationTokenSource _serverCancellationTokenSource;
+    private Dictionary<string, string> _lastCapturedHeaders;
+    private byte[] _lastCapturedBody;
+    private Connection _serverConnection;
 
     [SetUp]
     public void Setup()
@@ -44,14 +48,127 @@ public class IntegrationTest
     }
 
     [Test]
-    public async Task Should_Send_And_Receive_AS2_Message_Successfully()
+    public async Task Should_Succeed_When_Signed_And_Encrypted_And_Required()
     {
-        var senderResult = await SendSuccessfulMessage();
+        _serverConnection = BuildServerConnection(requireSigned: true, requireEncrypted: true);
+        var senderResult = await SendSuccessfulMessage(true, true);
 
-        Assert.That(senderResult.Success, Is.True, "AS2 message should be sent successfully");
+        Assert.That(senderResult.Success, Is.True, $"Message should succeed with Sign={true}, Encrypt={true}");
+        Assert.That(senderResult.MDNStatus, Is.Not.Null.Or.Empty, "MDN status should be returned");
+        Assert.That(senderResult.MDNIntegrityCheck, Is.Not.Null.Or.Empty, "MDN integrity check should be present");
     }
 
-    private async Task<SenderResult> SendSuccessfulMessage()
+    [Test]
+    public async Task Should_Fail_When_Message_Not_Encrypted_But_Encryption_Required()
+    {
+        _serverConnection = BuildServerConnection(requireSigned: false, requireEncrypted: true);
+
+        var senderResult = await SendSuccessfulMessage(sign: false, encrypt: false);
+
+        Assert.That(senderResult.Success, Is.False, "Message should fail because it is not encrypted");
+        Assert.That(senderResult.Error, Is.Not.Null);
+    }
+
+    [Test]
+    public async Task Should_Fail_When_Message_Not_Signed_But_Signature_Required()
+    {
+        _serverConnection = BuildServerConnection(requireSigned: true, requireEncrypted: false);
+
+        var senderResult = await SendSuccessfulMessage(sign: false, encrypt: false);
+
+        Assert.That(senderResult.Success, Is.False, "Message should fail because it is not signed");
+        Assert.That(senderResult.Error, Is.Not.Null);
+    }
+
+    [Test]
+    public async Task Should_Fail_When_Signature_Does_Not_Match_Receiver_Certificate()
+    {
+        _serverConnection = BuildServerConnection(requireSigned: true, requireEncrypted: false);
+        var senderResult = await SendSuccessfulMessage(sign: true, encrypt: false);
+        Assert.That(senderResult.Success, Is.True, "Message should be sent successfully");
+
+        _serverConnection.PartnerCertificatePath = Path.Combine(_certsPath, "wrong_sender.pem");
+
+        var input = new Input
+        {
+            Headers = _lastCapturedHeaders,
+            Body = _lastCapturedBody,
+        };
+
+        var options = new Options { ThrowErrorOnFailure = false };
+        var receiverResult = await As2.ValidateAndParsePayload(input, _serverConnection, options, CancellationToken.None);
+
+        Assert.That(receiverResult.Success, Is.False, "Signature verification should fail with unmatched certificate");
+        Assert.That(receiverResult.Error, Is.Not.Null.And.Not.Empty, "Error should indicate that the certificate did not match");
+    }
+
+
+    [Test]
+    public async Task Should_Fail_When_Encrypted_Message_Cannot_Be_Decrypted()
+    {
+        _serverConnection = BuildServerConnection(requireSigned: false, requireEncrypted: true);
+        var senderResult = await SendSuccessfulMessage(sign: false, encrypt: true);
+        Assert.That(senderResult.Success, Is.True, "Encrypted message should be sent successfully");
+
+        await Task.Delay(200);
+
+        var receiverResult = await SendMessageWithWrongDecryption();
+
+        Assert.That(receiverResult.Success, Is.False, "Decryption should fail with wrong private key");
+        Assert.That(receiverResult.Error, Is.Not.Null, "This certificate cannot be used to decrypt this message");
+    }
+
+    //private async Task<Result> SendMessageWithWrongCert()
+    //{
+    //    if (_lastCapturedHeaders == null || _lastCapturedBody == null)
+    //        throw new Exception("No request captured yet.");
+
+    //    var input = new Input
+    //    {
+    //        Headers = _lastCapturedHeaders,
+    //        Body = _lastCapturedBody,
+    //    };
+
+    //    var connection = new Connection
+    //    {
+    //        RequireSigned = true,
+    //        RequireEncrypted = false,
+    //        PartnerCertificatePath = Path.Combine(_certsPath, "wrong_sender.pem"), // intentionally wrong
+    //        OwnCertificatePath = Path.Combine(_certsPath, "receiver.pfx"),
+    //        OwnCertificatePassword = "receiver123",
+    //    };
+
+    //    var options = new Options { ThrowErrorOnFailure = false };
+
+    //    return await As2.ValidateAndParsePayload(input, connection, options, CancellationToken.None);
+    //}
+
+    private async Task<Result> SendMessageWithWrongDecryption()
+    {
+        if (_lastCapturedHeaders == null || _lastCapturedBody == null)
+            throw new Exception("No request captured yet.");
+
+        var input = new Input
+        {
+            Headers = _lastCapturedHeaders,
+            Body = _lastCapturedBody,
+        };
+
+        var connection = new Connection
+        {
+            RequireSigned = false,
+            RequireEncrypted = true,
+            PartnerCertificatePath = Path.Combine(_certsPath, "sender.pem"),
+            OwnCertificatePath = Path.Combine(_certsPath, "wrong_receiver.pfx"),
+            OwnCertificatePassword = "wrongpassword",
+        };
+
+        var options = new Options { ThrowErrorOnFailure = false };
+
+        return await As2.ValidateAndParsePayload(input, connection, options, CancellationToken.None);
+    }
+
+    private async Task<SenderResult> SendSuccessfulMessage(bool sign = true, bool encrypt = true)
     {
         var senderInput = new SenderInput
         {
@@ -73,9 +190,9 @@ public class IntegrationTest
 
         var senderOptions = new SenderOptions
         {
-            ThrowErrorOnFailure = true,
-            SignMessage = true,
-            EncryptMessage = true,
+            ThrowErrorOnFailure = false,
+            SignMessage = sign,
+            EncryptMessage = encrypt,
         };
 
         return await Helpers.SendMessage(senderInput, senderConnection, senderOptions, CancellationToken.None);
@@ -144,7 +261,6 @@ public class IntegrationTest
             if (!string.Equals(context.Request.HttpMethod, "POST", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = 405;
-                context.Response.Close();
                 return;
             }
 
@@ -155,39 +271,17 @@ public class IntegrationTest
                 bodyBytes = ms.ToArray();
             }
 
-            var headersBuilder = new StringBuilder();
-            for (int i = 0; i < context.Request.Headers.Count; i++)
+            var headers = context.Request.Headers
+                .AllKeys
+                .ToDictionary(key => key, key => context.Request.Headers[key], StringComparer.OrdinalIgnoreCase);
+
+            var input = new Input
             {
-                var key = context.Request.Headers.GetKey(i);
-                var value = context.Request.Headers.Get(i);
-                headersBuilder.AppendLine($"{key}:{value}");
-            }
-
-            var rawMessageBytes = Encoding.UTF8.GetBytes(headersBuilder.ToString() + "\r\n");
-            var fullRawMessageBytes = new byte[rawMessageBytes.Length + bodyBytes.Length];
-            Array.Copy(rawMessageBytes, 0, fullRawMessageBytes, 0, rawMessageBytes.Length);
-            Array.Copy(bodyBytes, 0, fullRawMessageBytes, rawMessageBytes.Length, bodyBytes.Length);
-
-            var fullRawMessage = Encoding.GetEncoding("ISO-8859-1").GetString(fullRawMessageBytes);
-
-            lock (_captureLock)
-            {
-                _lastCapturedRawMessage = fullRawMessage;
-            }
-
-            var as2From = context.Request.Headers["AS2-From"]?.Trim('"') ?? "TestSender";
-            var as2To = context.Request.Headers["AS2-To"]?.Trim('"') ?? "TestReceiver";
-            var messageId = context.Request.Headers["Message-ID"]?.Trim('<', '>') ?? Guid.NewGuid().ToString();
-
-            var receiverInput = new Input
-            {
-                RawMessage = fullRawMessage,
-                SenderAs2Id = as2From,
-                ReceiverAs2Id = as2To,
-                MessageId = messageId,
+                Headers = headers,
+                Body = bodyBytes,
             };
 
-            var receiverConnection = new Connection
+            var connection = _serverConnection ?? new Connection
             {
                 RequireSigned = true,
                 RequireEncrypted = true,
@@ -196,13 +290,15 @@ public class IntegrationTest
                 OwnCertificatePassword = "receiver123",
             };
 
-            var receiverOptions = new Options
-            {
-                ThrowErrorOnFailure = false,
-            };
+            var options = new Options { ThrowErrorOnFailure = false };
 
-            var result = await As2.ValidateAndParsePayload(
-                receiverInput, receiverConnection, receiverOptions, CancellationToken.None);
+            lock (_captureLock)
+            {
+                _lastCapturedHeaders = headers;
+                _lastCapturedBody = bodyBytes;
+            }
+
+            var result = await As2.ValidateAndParsePayload(input, connection, options, CancellationToken.None);
 
             if (result.Success && result.MdnReceipt != null)
             {
@@ -211,9 +307,7 @@ public class IntegrationTest
                 {
                     var parts = header.Split(new[] { ':' }, 2);
                     if (parts.Length == 2)
-                    {
                         context.Response.Headers.Add(parts[0].Trim(), parts[1].Trim());
-                    }
                 }
 
                 var mdnContent = result.MdnReceipt.ContentB ?? Encoding.UTF8.GetBytes(result.MdnReceipt.Content ?? string.Empty);
@@ -230,7 +324,6 @@ public class IntegrationTest
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error processing AS2 request: {ex.Message}");
             context.Response.StatusCode = 500;
             var errorBytes = Encoding.UTF8.GetBytes($"Server error: {ex.Message}");
             await context.Response.OutputStream.WriteAsync(errorBytes, 0, errorBytes.Length);
@@ -239,5 +332,22 @@ public class IntegrationTest
         {
             context.Response.Close();
         }
+    }
+
+    private Connection BuildServerConnection(
+        bool requireSigned,
+        bool requireEncrypted,
+        string partnerCertFile = "sender.pem",
+        string ownCertFile = "receiver.pfx",
+        string ownCertPassword = "receiver123")
+    {
+        return new Connection
+        {
+            RequireSigned = requireSigned,
+            RequireEncrypted = requireEncrypted,
+            PartnerCertificatePath = Path.Combine(_certsPath, partnerCertFile),
+            OwnCertificatePath = Path.Combine(_certsPath, ownCertFile),
+            OwnCertificatePassword = ownCertPassword,
+        };
     }
 }

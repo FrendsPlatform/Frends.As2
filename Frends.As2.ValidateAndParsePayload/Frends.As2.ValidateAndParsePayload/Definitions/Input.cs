@@ -1,4 +1,6 @@
-﻿namespace Frends.As2.ValidateAndParsePayload.Definitions;
+﻿using System.Collections.Generic;
+
+namespace Frends.As2.ValidateAndParsePayload.Definitions;
 
 /// <summary>
 /// Essential parameters.
@@ -6,26 +8,25 @@
 public class Input
 {
     /// <summary>
-    /// Raw AS2 message (MIME format) from HTTP POST body.
+    /// HTTP headers from the AS2 request containing AS2-From, AS2-To, Message-ID and other AS2 metadata.
     /// </summary>
-    /// <example>MIME-Version: 1.0\r\nContent-Type: application/pkcs7-mime; ...</example>
-    public string RawMessage { get; set; }
+    /// <example>
+    /// {
+    ///     "AS2-From": "TestSender",
+    ///     "AS2-To": "TestReceiver",
+    ///     "Message-ID": "&lt;12345@example.com&gt;",
+    ///     "Subject": "Test AS2 Message",
+    ///     "MIME-Version": "1.0",
+    ///     "Content-Type": "application/pkcs7-mime; smime-type=enveloped-data; name=\"smime.p7m\""
+    /// }
+    /// </example>
+    public Dictionary<string, string> Headers { get; set; }
 
     /// <summary>
-    /// AS2 sender identifier (maps to AS2-From).
+    /// Raw body content as byte array containing the AS2 message payload (encrypted/signed data).
     /// </summary>
-    /// <example>PartnerAS2</example>
-    public string SenderAs2Id { get; set; }
-
-    /// <summary>
-    /// AS2 receiver identifier (maps to AS2-To).
-    /// </summary>
-    /// <example>MyCompanyAS2</example>
-    public string ReceiverAs2Id { get; set; }
-
-    /// <summary>
-    /// Message-ID from HTTP request (optional).
-    /// </summary>
-    /// <example>user@example.com</example>
-    public string MessageId { get; set; }
+    /// <example>
+    /// Encoding.UTF8.GetBytes("This is a test AS2 message payload")
+    /// </example>
+    public byte[] Body { get; set; }
 }
