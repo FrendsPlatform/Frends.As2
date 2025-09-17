@@ -13,33 +13,7 @@ namespace Frends.As2.SendMessage.Tests;
 [TestFixture]
 public class IntegrationTests
 {
-    private static Input input = new()
-    {
-        SenderAs2Id = "Sender",
-        ReceiverAs2Id = "Receiver",
-        Subject = "Test Connection",
-        MessageFilePath = null,
-    };
-
-    private static Connection connection = new()
-    {
-        As2EndpointUrl = "http://localhost:4080",
-        SignMessage = false,
-        EncryptMessage = false,
-        SenderCertificatePassword = "sender123",
-        SenderCertificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "sender.pfx"),
-        ReceiverCertificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "receiver.pem"),
-        ContentTypeHeader = "text/plain",
-        MdnReceiver = "usr@example.com",
-    };
-
-    private static Options options = new()
-    {
-        ThrowErrorOnFailure = false,
-        ErrorMessageOnFailure = null,
-    };
-
-    private string _testDataDir = Path.Combine(AppContext.BaseDirectory, "testData");
+    private readonly string _testDataDir = Path.Combine(AppContext.BaseDirectory, "testData");
     private string _testFilePath;
     private string _currentTestId;
 
@@ -50,9 +24,9 @@ public class IntegrationTests
         _currentTestId = Guid.NewGuid().ToString("N");
         _testFilePath = Path.Combine(_testDataDir, $"message_{_currentTestId}.txt");
 
-        File.WriteAllText(_testFilePath, $"AS2_TEST_{_currentTestId}: This is a unique test message at {DateTime.UtcNow:O}");
-
-        input.MessageFilePath = _testFilePath;
+        File.WriteAllText(
+            _testFilePath,
+            $"AS2_TEST_{_currentTestId}: This is a unique test message at {DateTime.UtcNow:O}");
     }
 
     [TearDown]
@@ -65,42 +39,42 @@ public class IntegrationTests
     [Test]
     public async Task ShouldSendPlainMessage()
     {
-        var result = await As2.SendMessage(input, connection, options, CancellationToken.None);
+        var result = await As2.SendMessage(Input(), Connection(), Options(), CancellationToken.None);
         Assert.That(result.Success, Is.True);
     }
 
     [Test]
     public async Task ShouldSendSignedMessage()
     {
-        var con = connection;
+        var con = Connection();
         con.SignMessage = true;
 
-        var result = await As2.SendMessage(input, con, options, CancellationToken.None);
+        var result = await As2.SendMessage(Input(), con, Options(), CancellationToken.None);
         Assert.That(result.Success, Is.True);
     }
 
     [Test]
     public async Task ShouldSendEncryptedMessage()
     {
-        var con = connection;
+        var con = Connection();
         con.EncryptMessage = true;
 
-        var result = await As2.SendMessage(input, con, options, CancellationToken.None);
+        var result = await As2.SendMessage(Input(), con, Options(), CancellationToken.None);
         Assert.That(result.Success, Is.True);
     }
 
     [Test]
     public async Task ShouldSendSignedAndEncryptedMessage()
     {
-        var con = connection;
+        var con = Connection();
         con.SignMessage = true;
         con.EncryptMessage = true;
 
-        var opt = options;
+        var opt = Options();
         opt.MdnMode = MdnMode.Sync;
         opt.ThrowErrorOnFailure = true;
 
-        var result = await As2.SendMessage(input, con, opt, CancellationToken.None);
+        var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
         Assert.That(result.Success, Is.True);
         Assert.That(result.IsMdnPending, Is.False);
     }
@@ -111,11 +85,10 @@ public class IntegrationTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
         var mdnTask = StartMdnReceiver(cts.Token);
 
-        var opt = options;
+        var opt = Options();
         opt.MdnMode = MdnMode.Async;
-        opt.AsyncMdnUrl = "http://host.docker.internal:9090/mdn-receiver/";
 
-        var result = await As2.SendMessage(input, connection, opt, CancellationToken.None);
+        var result = await As2.SendMessage(Input(), Connection(), opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.IsMdnPending, Is.True, "Async MDN should be pending");
@@ -133,14 +106,13 @@ public class IntegrationTests
 
         var mdnTask = StartMdnReceiver(cts.Token);
 
-        var opt = options;
+        var opt = Options();
         opt.MdnMode = MdnMode.Async;
-        opt.AsyncMdnUrl = "http://host.docker.internal:9090/mdn-receiver/";
 
-        var con = connection;
+        var con = Connection();
         con.SignMessage = true;
 
-        var result = await As2.SendMessage(input, con, opt, CancellationToken.None);
+        var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.IsMdnPending, Is.True, "Async MDN should be pending");
@@ -157,14 +129,13 @@ public class IntegrationTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         var mdnTask = StartMdnReceiver(cts.Token);
 
-        var opt = options;
+        var opt = Options();
         opt.MdnMode = MdnMode.Async;
-        opt.AsyncMdnUrl = "http://host.docker.internal:9090/mdn-receiver/";
 
-        var con = connection;
+        var con = Connection();
         con.EncryptMessage = true;
 
-        var result = await As2.SendMessage(input, con, opt, CancellationToken.None);
+        var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.IsMdnPending, Is.True);
@@ -178,22 +149,13 @@ public class IntegrationTests
     [Test]
     public async Task ShouldFailWithInvalidEndpointUrl()
     {
-        var invalidConnection = new Connection
-        {
-            As2EndpointUrl = "http://invalid-endpoint:9999",
-            SenderCertificatePassword = connection.SenderCertificatePassword,
-            SenderCertificatePath = connection.SenderCertificatePath,
-            ReceiverCertificatePath = connection.ReceiverCertificatePath,
-            ContentTypeHeader = connection.ContentTypeHeader,
-            MdnReceiver = connection.MdnReceiver,
-            SignMessage = false,
-            EncryptMessage = false,
-        };
+        var con = Connection();
+        con.As2EndpointUrl = "http://invalid-endpoint:9999";
 
-        var opt = options;
+        var opt = Options();
         opt.ThrowErrorOnFailure = false;
 
-        var result = await As2.SendMessage(input, invalidConnection, opt, CancellationToken.None);
+        var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error.Message, Does.Contain("No such host is known"));
@@ -202,47 +164,70 @@ public class IntegrationTests
     [Test]
     public async Task ShouldFailWithInvalidCertificatePath()
     {
-        var invalidConnection = new Connection
-        {
-            As2EndpointUrl = connection.As2EndpointUrl,
-            SenderCertificatePassword = connection.SenderCertificatePassword,
-            SenderCertificatePath = "invalid/path/sender.pfx",
-            ReceiverCertificatePath = connection.ReceiverCertificatePath,
-            ContentTypeHeader = connection.ContentTypeHeader,
-            MdnReceiver = connection.MdnReceiver,
-            SignMessage = true,
-        };
+        var con = Connection();
+        con.SenderCertificatePath = "invalid/path/sender.pfx";
+        con.SignMessage = true;
 
-        var opt = options;
+        var opt = Options();
         opt.ThrowErrorOnFailure = false;
 
-        var result = await As2.SendMessage(input, invalidConnection, opt, CancellationToken.None);
+        var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
-        Assert.That(result.Error.Message, Does.Contain("Cannot open certificate store: The system cannot find the file specified"));
+        Assert.That(
+            result.Error.Message,
+            Does.Contain("Cannot open certificate store: The system cannot find the file specified"));
     }
 
     [Test]
     public async Task ShouldFailWithInvalidMessageFilePath()
     {
-        var invalidInput = new Input
-        {
-            SenderAs2Id = input.SenderAs2Id,
-            ReceiverAs2Id = input.ReceiverAs2Id,
-            Subject = input.Subject,
-            MessageFilePath = "invalid/path/message.txt",
-        };
+        var input = Input();
+        input.MessageFilePath = "invalid/path/message.txt";
 
-        var opt = options;
+        var opt = Options();
         opt.ThrowErrorOnFailure = false;
 
-        var result = await As2.SendMessage(invalidInput, connection, opt, CancellationToken.None);
+        var result = await As2.SendMessage(input, Connection(), opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error.Message, Does.Contain("Could not find a part of the path"));
     }
 
-    private async Task<string> StartMdnReceiver(CancellationToken token)
+    [Test]
+    public async Task ShouldFailWhenAsyncMdnUrlIsMissing()
+    {
+        var opt = Options();
+        opt.MdnMode = MdnMode.Async;
+        opt.AsyncMdnUrl = null;
+        opt.ThrowErrorOnFailure = false;
+        var result = await As2.SendMessage(Input(), Connection(), opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message, Does.Contain("AsyncMdnUrl must be provided when MdnMode is set to Async"));
+    }
+
+    private static Connection Connection() =>
+        new()
+        {
+            As2EndpointUrl = "http://localhost:4080",
+            SignMessage = false,
+            EncryptMessage = false,
+            SenderCertificatePassword = "sender123",
+            SenderCertificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "sender.pfx"),
+            ReceiverCertificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "receiver.pem"),
+            ContentTypeHeader = "text/plain",
+            MdnReceiver = "usr@example.com",
+        };
+
+    private static Options Options() => new()
+    {
+        ThrowErrorOnFailure = false,
+        ErrorMessageOnFailure = null,
+        AsyncMdnUrl = "http://host.docker.internal:9090/mdn-receiver/",
+    };
+
+    private static async Task<string> StartMdnReceiver(CancellationToken token)
     {
         var listener = new HttpListener();
         listener.Prefixes.Add("http://+:9090/mdn-receiver/");
@@ -254,10 +239,10 @@ public class IntegrationTests
             if (context == null) return null;
 
             using var reader = new StreamReader(context.Request.InputStream, Encoding.UTF8);
-            string rawMdn = await reader.ReadToEndAsync();
+            var rawMdn = await reader.ReadToEndAsync(token);
 
             context.Response.StatusCode = 200;
-            await context.Response.OutputStream.WriteAsync(Encoding.UTF8.GetBytes("OK"));
+            await context.Response.OutputStream.WriteAsync("OK"u8.ToArray(), token);
             context.Response.Close();
 
             return rawMdn;
@@ -269,13 +254,13 @@ public class IntegrationTests
         }
     }
 
-    private async Task<HttpListenerContext> GetContextAsync(HttpListener listener, CancellationToken token)
+    private static async Task<HttpListenerContext> GetContextAsync(HttpListener listener, CancellationToken token)
     {
         var contextTask = listener.GetContextAsync();
 
         var tcs = new TaskCompletionSource<HttpListenerContext>();
 
-        using (token.Register(() => tcs.TrySetResult(null)))
+        await using (token.Register(() => tcs.TrySetResult(null)))
         {
             var completedTask = await Task.WhenAny(contextTask, tcs.Task);
 
@@ -298,4 +283,12 @@ public class IntegrationTests
             }
         }
     }
+
+    private Input Input() => new()
+    {
+        SenderAs2Id = "Sender",
+        ReceiverAs2Id = "Receiver",
+        Subject = "Test Connection",
+        MessageFilePath = _testFilePath,
+    };
 }

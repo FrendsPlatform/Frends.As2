@@ -37,7 +37,7 @@ public static class As2
                 throw new ArgumentException("AsyncMdnUrl must be provided when MdnMode is set to Async");
             }
 
-            AS2Sender as2 = new AS2Sender();
+            var as2 = new AS2Sender();
 
             as2.AS2From = input.SenderAs2Id;
             as2.AS2To = input.ReceiverAs2Id;
@@ -55,7 +55,7 @@ public static class As2
                         header.Name.Equals("Subject", StringComparison.OrdinalIgnoreCase))
                         continue;
 
-                    await as2.SetRequestHeader(header.Name, header.Value);
+                    await as2.SetRequestHeader(header.Name, header.Value, cancellationToken);
                 }
             }
 
@@ -73,59 +73,50 @@ public static class As2
                 as2.MDNTo = connection.MdnReceiver;
             }
 
-            if (connection.SignMessage)
-            {
-                string password = connection.SenderCertificatePassword;
-                as2.SigningCert = new Certificate(CertStoreTypes.cstAuto, connection.SenderCertificatePath, password, "*");
-            }
-
-            if (connection.EncryptMessage)
+            if (connection.EncryptMessage || connection.SignMessage)
             {
                 as2.RecipientCerts.Add(new Certificate(connection.ReceiverCertificatePath));
             }
 
+            if (connection.SignMessage)
+            {
+                var password = connection.SenderCertificatePassword;
+                as2.SigningCert =
+                    new Certificate(CertStoreTypes.cstAuto, connection.SenderCertificatePath, password, "*");
+            }
+            else
+            {
+                as2.MDNOptions = string.Empty;
+            }
+
+            if (!connection.EncryptMessage)
+            {
+                as2.EncryptionAlgorithm = string.Empty;
+            }
+
             as2.EDIData = new EDIData();
             as2.EDIData.EDIType = "text/plain";
-            as2.EDIData.Data = File.ReadAllText(input.MessageFilePath);
+            as2.EDIData.Data = await File.ReadAllTextAsync(input.MessageFilePath, cancellationToken);
             as2.LogDirectory = "logs";
-            try
-            {
-                await as2.Post(cancellationToken);
 
-                var mdn = as2.MDNReceipt;
+            await as2.Post(cancellationToken);
 
-                if (options.MdnMode == MdnMode.Async)
-                {
-                    return new Result
-                    {
-                        Success = true,
-                        PartnerResponse = mdn.Content,
-                        MessageId = as2.MessageId,
-                        IsMdnPending = true,
-                        MdnStatus = "Async MDN requested - MDN will be sent to: " + options.AsyncMdnUrl,
-                        MdnMessage = "MDN delivery pending",
-                        MdnIntegrityCheck = null,
-                    };
-                }
-                else
-                {
-                    return new Result
-                    {
-                        Success = true,
-                        PartnerResponse = mdn.Content,
-                        MessageId = as2.MessageId,
-                        IsMdnPending = false,
-                        MdnStatus = mdn.MDN.Split("\r\n")
-                            .FirstOrDefault(l => l.StartsWith("Disposition:", StringComparison.OrdinalIgnoreCase))?.Trim(),
-                        MdnMessage = mdn.Message,
-                        MdnIntegrityCheck = mdn.MICValue,
-                    };
-                }
-            }
-            catch (IPWorksEDIException)
+            var mdn = as2.MDNReceipt;
+
+            var result = new Result
             {
-                throw;
-            }
+                Success = true,
+                PartnerResponse = mdn.Content,
+                MessageId = as2.MessageId,
+                IsMdnPending = options.MdnMode == MdnMode.Async,
+                MdnStatus = options.MdnMode == MdnMode.Async
+                    ? "Async MDN requested - MDN will be sent to: " + options.AsyncMdnUrl
+                    : mdn.MDN.Split("\r\n")
+                        .FirstOrDefault(l => l.StartsWith("Disposition:", StringComparison.OrdinalIgnoreCase))?.Trim(),
+                MdnMessage = options.MdnMode == MdnMode.Async ? "MDN delivery pending" : mdn.Message,
+                MdnIntegrityCheck = options.MdnMode == MdnMode.Async ? null : mdn.MICValue,
+            };
+            return result;
         }
         catch (Exception e)
         {
