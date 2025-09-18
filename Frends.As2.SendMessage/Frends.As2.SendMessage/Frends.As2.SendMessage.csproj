@@ -11,7 +11,7 @@
         <PackageTags>Frends</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Description>Task to send messaged with AS2 protocol</Description>
+        <Description>Task to send messages with AS2 protocol</Description>
         <PackageProjectUrl>https://frends.com/</PackageProjectUrl>
         <RepositoryUrl>https://github.com/FrendsPlatform/Frends.As2/tree/main/Frends.As2.SendMessage</RepositoryUrl>
     </PropertyGroup>
