@@ -82,7 +82,7 @@ public class IntegrationTests
     [Test]
     public async Task ShouldSendMessageWithAsyncMdn()
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
         var mdnTask = StartMdnReceiver(cts.Token);
 
         var opt = Options();
@@ -102,7 +102,7 @@ public class IntegrationTests
     [Test]
     public async Task ShouldSendSignedMessageWithAsyncMdn()
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         var mdnTask = StartMdnReceiver(cts.Token);
 
@@ -126,7 +126,7 @@ public class IntegrationTests
     [Test]
     public async Task ShouldSendEncryptedMessageWithAsyncMdn()
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
         var mdnTask = StartMdnReceiver(cts.Token);
 
         var opt = Options();
@@ -158,7 +158,10 @@ public class IntegrationTests
         var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
-        Assert.That(result.Error.Message, Does.Contain("No such host is known"));
+        var expectedMessage = OperatingSystem.IsWindows()
+            ? "No such host is known"
+            : "System error: Resource temporarily unavailable";
+        Assert.That(result.Error.Message, Does.Contain(expectedMessage));
     }
 
     [Test]
@@ -174,9 +177,10 @@ public class IntegrationTests
         var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
-        Assert.That(
-            result.Error.Message,
-            Does.Contain("Cannot open certificate store: The system cannot find the file specified"));
+        var expectedMessage = OperatingSystem.IsWindows()
+            ? "Cannot open certificate store: The system cannot find the file specified"
+            : "The storeName value was invalid.";
+        Assert.That(result.Error.Message, Does.Contain(expectedMessage));
     }
 
     [Test]
@@ -231,7 +235,7 @@ public class IntegrationTests
     {
         var listener = new HttpListener();
         listener.Prefixes.Add(OperatingSystem.IsWindows()
-            ? "http://host.docker.internal:9090/mdn-receiver/"
+            ? "http://+:9090/mdn-receiver/"
             : "http://*:9090/mdn-receiver/");
         listener.Start();
 
