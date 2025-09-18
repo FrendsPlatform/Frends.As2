@@ -17,6 +17,8 @@
     volumes:
       - ./config:/opt/openas2/config:rw
       - ./data:/opt/openas2/data:rw
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   openas2_webui:
     image: greicodex/openas2-ui:latest
