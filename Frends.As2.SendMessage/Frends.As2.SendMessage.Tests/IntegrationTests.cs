@@ -230,7 +230,9 @@ public class IntegrationTests
     private static async Task<string> StartMdnReceiver(CancellationToken token)
     {
         var listener = new HttpListener();
-        listener.Prefixes.Add("http://host.docker.internal:9090/mdn-receiver/");
+        listener.Prefixes.Add(OperatingSystem.IsWindows()
+            ? "http://host.docker.internal:9090/mdn-receiver/"
+            : "http://*:9090/mdn-receiver/");
         listener.Start();
 
         try
