@@ -37,10 +37,7 @@ public static class As2
                 throw new ArgumentException("AsyncMdnUrl must be provided when MdnMode is set to Async");
             }
 
-            var as2 = new AS2Sender();
-            as2.RuntimeLicense =
-                "42454E4A415A3039313832353330574542545231413100474642594A444C49455042514C54515A00303030303030303000003055535939483147334333560000#IPWORKSEDI#EXPIRING_TRIAL#20251018";
-
+            var as2 = NSoftware.Activation.NSoftware.ActivateAs2Sender();
             as2.AS2From = input.SenderAs2Id;
             as2.AS2To = input.ReceiverAs2Id;
 
