@@ -23,10 +23,7 @@ public class IntegrationTests
         Directory.CreateDirectory(_testDataDir);
         _currentTestId = Guid.NewGuid().ToString("N");
         _testFilePath = Path.Combine(_testDataDir, $"message_{_currentTestId}.txt");
-
-        File.WriteAllText(
-            _testFilePath,
-            $"AS2_TEST_{_currentTestId}: This is a unique test message at {DateTime.UtcNow:O}");
+        File.WriteAllText(_testFilePath, "This is a test message");
     }
 
     [TearDown]

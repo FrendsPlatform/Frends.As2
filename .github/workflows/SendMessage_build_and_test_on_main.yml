@@ -17,3 +17,5 @@ jobs:
       prebuild_command: docker-compose -f Frends.As2.SendMessage.Tests/docker/docker-compose.yaml up -d
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
+      build_time_nuget_feed_url: ${{ secrets.BUILD_TIME_NUGET_FEED_URL }}
+      build_time_nuget_feed_api_key: ${{ secrets.BUILD_TIME_NUGET_FEED_API_KEY }}

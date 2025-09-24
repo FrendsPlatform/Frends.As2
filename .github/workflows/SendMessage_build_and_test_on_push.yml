@@ -18,3 +18,5 @@ jobs:
     secrets:
       badge_service_api_key: ${{ secrets.BADGE_SERVICE_API_KEY }}
       test_feed_api_key: ${{ secrets.TASKS_TEST_FEED_API_KEY }}
+      build_time_nuget_feed_url: ${{ secrets.BUILD_TIME_NUGET_FEED_URL }}
+      build_time_nuget_feed_api_key: ${{ secrets.BUILD_TIME_NUGET_FEED_API_KEY }}
