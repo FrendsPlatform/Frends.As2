@@ -16,7 +16,7 @@ namespace Frends.As2.SendMessage;
 public static class As2
 {
     /// <summary>
-    /// As2 SendMessage task sends a message to an AS2 server using the provided parameters.
+    /// As2 SendMessage task sends a message to an AS2 server using the provided parameters
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-As2-SendMessage)
     /// </summary>
     /// <param name="input">Essential parameters.</param>
