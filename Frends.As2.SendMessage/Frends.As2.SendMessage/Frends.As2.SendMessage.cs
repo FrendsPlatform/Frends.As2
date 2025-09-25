@@ -11,7 +11,7 @@ using nsoftware.async.IPWorksEDI;
 namespace Frends.As2.SendMessage;
 
 /// <summary>
-/// Task class.
+/// Task class
 /// </summary>
 public static class As2
 {
