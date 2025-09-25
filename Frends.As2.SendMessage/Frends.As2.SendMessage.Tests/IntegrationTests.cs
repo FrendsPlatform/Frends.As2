@@ -13,25 +13,7 @@ namespace Frends.As2.SendMessage.Tests;
 [TestFixture]
 public class IntegrationTests
 {
-    private readonly string _testDataDir = Path.Combine(AppContext.BaseDirectory, "testData");
-    private string _testFilePath;
-    private string _currentTestId;
-
-    [SetUp]
-    public void Setup()
-    {
-        Directory.CreateDirectory(_testDataDir);
-        _currentTestId = Guid.NewGuid().ToString("N");
-        _testFilePath = Path.Combine(_testDataDir, $"message_{_currentTestId}.txt");
-        File.WriteAllText(_testFilePath, "This is a test message");
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        if (Directory.Exists(_testDataDir))
-            Directory.Delete(_testDataDir, true);
-    }
+    private readonly string _testFilePath = Path.Combine(AppContext.BaseDirectory, "testData", "mess.txt");
 
     [Test]
     public async Task ShouldSendPlainMessage()
