@@ -32,8 +32,7 @@ public static class As2
     {
         try
         {
-            var as2 = new AS2Receiver();
-
+            var as2 = NSoftware.Activation.NSoftware.ActivateAs2Receiver();
             var headersString = ConvertHeadersToString(input.Headers);
             as2.RequestHeadersString = headersString;
 
@@ -83,7 +82,7 @@ public static class As2
         var sb = new StringBuilder();
         foreach (var kvp in headers)
         {
-            sb.AppendLine($"{kvp.Key}:{kvp.Value}");
+            sb.Append($"{kvp.Key}: {kvp.Value}\r\n");
         }
 
         return sb.ToString();
