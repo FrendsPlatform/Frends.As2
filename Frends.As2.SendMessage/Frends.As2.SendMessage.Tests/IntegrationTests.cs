@@ -1,7 +1,4 @@
 using System;
-using System.IO;
-using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Frends.As2.SendMessage.Definitions;
@@ -13,47 +10,49 @@ namespace Frends.As2.SendMessage.Tests;
 [TestFixture]
 public class IntegrationTests
 {
-    private readonly string _testFilePath = Path.Combine(AppContext.BaseDirectory, "testData", "mess.txt");
-
     [Test]
     public async Task ShouldSendPlainMessage()
     {
-        var result = await As2.SendMessage(Input(), Connection(), Options(), CancellationToken.None);
+        var result = await As2.SendMessage(
+            TestSetup.Input(),
+            TestSetup.Connection(),
+            TestSetup.Options(),
+            CancellationToken.None);
         Assert.That(result.Success, Is.True);
     }
 
     [Test]
     public async Task ShouldSendSignedMessage()
     {
-        var con = Connection();
+        var con = TestSetup.Connection();
         con.SignMessage = true;
 
-        var result = await As2.SendMessage(Input(), con, Options(), CancellationToken.None);
+        var result = await As2.SendMessage(TestSetup.Input(), con, TestSetup.Options(), CancellationToken.None);
         Assert.That(result.Success, Is.True);
     }
 
     [Test]
     public async Task ShouldSendEncryptedMessage()
     {
-        var con = Connection();
+        var con = TestSetup.Connection();
         con.EncryptMessage = true;
 
-        var result = await As2.SendMessage(Input(), con, Options(), CancellationToken.None);
+        var result = await As2.SendMessage(TestSetup.Input(), con, TestSetup.Options(), CancellationToken.None);
         Assert.That(result.Success, Is.True);
     }
 
     [Test]
     public async Task ShouldSendSignedAndEncryptedMessage()
     {
-        var con = Connection();
+        var con = TestSetup.Connection();
         con.SignMessage = true;
         con.EncryptMessage = true;
 
-        var opt = Options();
+        var opt = TestSetup.Options();
         opt.MdnMode = MdnMode.Sync;
         opt.ThrowErrorOnFailure = true;
 
-        var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
         Assert.That(result.Success, Is.True);
         Assert.That(result.IsMdnPending, Is.False);
     }
@@ -62,12 +61,12 @@ public class IntegrationTests
     public async Task ShouldSendMessageWithAsyncMdn()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var mdnTask = StartMdnReceiver(cts.Token);
+        var mdnTask = TestSetup.StartMdnReceiver(cts.Token);
 
-        var opt = Options();
+        var opt = TestSetup.Options();
         opt.MdnMode = MdnMode.Async;
 
-        var result = await As2.SendMessage(Input(), Connection(), opt, CancellationToken.None);
+        var result = await As2.SendMessage(TestSetup.Input(), TestSetup.Connection(), opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.IsMdnPending, Is.True, "Async MDN should be pending");
@@ -83,15 +82,15 @@ public class IntegrationTests
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
-        var mdnTask = StartMdnReceiver(cts.Token);
+        var mdnTask = TestSetup.StartMdnReceiver(cts.Token);
 
-        var opt = Options();
+        var opt = TestSetup.Options();
         opt.MdnMode = MdnMode.Async;
 
-        var con = Connection();
+        var con = TestSetup.Connection();
         con.SignMessage = true;
 
-        var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.IsMdnPending, Is.True, "Async MDN should be pending");
@@ -106,15 +105,15 @@ public class IntegrationTests
     public async Task ShouldSendEncryptedMessageWithAsyncMdn()
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var mdnTask = StartMdnReceiver(cts.Token);
+        var mdnTask = TestSetup.StartMdnReceiver(cts.Token);
 
-        var opt = Options();
+        var opt = TestSetup.Options();
         opt.MdnMode = MdnMode.Async;
 
-        var con = Connection();
+        var con = TestSetup.Connection();
         con.EncryptMessage = true;
 
-        var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.IsMdnPending, Is.True);
@@ -128,13 +127,13 @@ public class IntegrationTests
     [Test]
     public async Task ShouldFailWithInvalidEndpointUrl()
     {
-        var con = Connection();
+        var con = TestSetup.Connection();
         con.As2EndpointUrl = "http://invalid-endpoint:9999";
 
-        var opt = Options();
+        var opt = TestSetup.Options();
         opt.ThrowErrorOnFailure = false;
 
-        var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
         var expectedMessage = OperatingSystem.IsWindows()
@@ -146,14 +145,14 @@ public class IntegrationTests
     [Test]
     public async Task ShouldFailWithInvalidCertificatePath()
     {
-        var con = Connection();
+        var con = TestSetup.Connection();
         con.SenderCertificatePath = "invalid/path/sender.pfx";
         con.SignMessage = true;
 
-        var opt = Options();
+        var opt = TestSetup.Options();
         opt.ThrowErrorOnFailure = false;
 
-        var result = await As2.SendMessage(Input(), con, opt, CancellationToken.None);
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
         var expectedMessage = OperatingSystem.IsWindows()
@@ -165,13 +164,13 @@ public class IntegrationTests
     [Test]
     public async Task ShouldFailWithInvalidMessageFilePath()
     {
-        var input = Input();
+        var input = TestSetup.Input();
         input.MessageFilePath = "invalid/path/message.txt";
 
-        var opt = Options();
+        var opt = TestSetup.Options();
         opt.ThrowErrorOnFailure = false;
 
-        var result = await As2.SendMessage(input, Connection(), opt, CancellationToken.None);
+        var result = await As2.SendMessage(input, TestSetup.Connection(), opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error.Message, Does.Contain("Could not find a part of the path"));
@@ -180,100 +179,13 @@ public class IntegrationTests
     [Test]
     public async Task ShouldFailWhenAsyncMdnUrlIsMissing()
     {
-        var opt = Options();
+        var opt = TestSetup.Options();
         opt.MdnMode = MdnMode.Async;
         opt.AsyncMdnUrl = null;
         opt.ThrowErrorOnFailure = false;
-        var result = await As2.SendMessage(Input(), Connection(), opt, CancellationToken.None);
+        var result = await As2.SendMessage(TestSetup.Input(), TestSetup.Connection(), opt, CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error.Message, Does.Contain("AsyncMdnUrl must be provided when MdnMode is set to Async"));
     }
-
-    private static Connection Connection() =>
-        new()
-        {
-            As2EndpointUrl = "http://localhost:4080",
-            SignMessage = false,
-            EncryptMessage = false,
-            SenderCertificatePassword = "sender123",
-            SenderCertificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "sender.pfx"),
-            ReceiverCertificatePath = Path.Combine(AppContext.BaseDirectory, "certs", "receiver.pem"),
-            ContentTypeHeader = "text/plain",
-            MdnReceiver = "usr@example.com",
-        };
-
-    private static Options Options() => new()
-    {
-        ThrowErrorOnFailure = false,
-        ErrorMessageOnFailure = null,
-        AsyncMdnUrl = "http://host.docker.internal:9090/mdn-receiver/",
-    };
-
-    private static async Task<string> StartMdnReceiver(CancellationToken token)
-    {
-        var listener = new HttpListener();
-        listener.Prefixes.Add(OperatingSystem.IsWindows()
-            ? "http://+:9090/mdn-receiver/"
-            : "http://*:9090/mdn-receiver/");
-        listener.Start();
-
-        try
-        {
-            var context = await GetContextAsync(listener, token);
-            if (context == null) return null;
-
-            using var reader = new StreamReader(context.Request.InputStream, Encoding.UTF8);
-            var rawMdn = await reader.ReadToEndAsync(token);
-
-            context.Response.StatusCode = 200;
-            await context.Response.OutputStream.WriteAsync("OK"u8.ToArray(), token);
-            context.Response.Close();
-
-            return rawMdn;
-        }
-        finally
-        {
-            listener.Stop();
-            listener.Close();
-        }
-    }
-
-    private static async Task<HttpListenerContext> GetContextAsync(HttpListener listener, CancellationToken token)
-    {
-        var contextTask = listener.GetContextAsync();
-
-        var tcs = new TaskCompletionSource<HttpListenerContext>();
-
-        await using (token.Register(() => tcs.TrySetResult(null)))
-        {
-            var completedTask = await Task.WhenAny(contextTask, tcs.Task);
-
-            if (completedTask == tcs.Task)
-            {
-                return null;
-            }
-
-            try
-            {
-                return await contextTask;
-            }
-            catch (ObjectDisposedException)
-            {
-                return null;
-            }
-            catch (HttpListenerException ex) when (ex.ErrorCode == 995)
-            {
-                return null;
-            }
-        }
-    }
-
-    private Input Input() => new()
-    {
-        SenderAs2Id = "Sender",
-        ReceiverAs2Id = "Receiver",
-        Subject = "Test Connection",
-        MessageFilePath = _testFilePath,
-    };
 }

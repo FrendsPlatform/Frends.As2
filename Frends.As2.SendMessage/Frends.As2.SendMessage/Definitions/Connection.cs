@@ -66,5 +66,6 @@ public class Connection
     /// </summary>
     /// <example>application/zip</example>
     [DisplayFormat(DataFormatString = "Text")]
+    [DefaultValue("text/plain")]
     public string ContentTypeHeader { get; set; }
 }

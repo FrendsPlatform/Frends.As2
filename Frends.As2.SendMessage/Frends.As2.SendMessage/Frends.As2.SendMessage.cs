@@ -23,7 +23,7 @@ public static class As2
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>object { bool Success, string PartnerResponse, string MessageId, bool IsMdnPending, string MdnStatus, string MdnMessage, string MdnIntegrityCheck, object Error { string Message, dynamic AdditionalInfo } }</returns>
+    /// <returns>object { bool Success, string PartnerResponse, string MessageId, bool IsMdnPending, string MdnStatus, string MdnMessage, string MdnIntegrityCheck, object Error { string Message, Exception AdditionalInfo } }</returns>
     public static async Task<Result> SendMessage(
         [PropertyTab] Input input,
         [PropertyTab] Connection connection,
@@ -37,7 +37,9 @@ public static class As2
                 throw new ArgumentException("AsyncMdnUrl must be provided when MdnMode is set to Async");
             }
 
-            var as2 = NSoftware.Activation.NSoftware.ActivateAs2Sender();
+            // var as2 = NSoftware.Activation.NSoftware.ActivateAs2Sender();
+            var as2 = new AS2Sender();
+            as2.RuntimeLicense = "42454E4A415A3039313832353330574542545231413100474642594A444C49455042514C54515A00303030303030303000003055535939483147334333560000#IPWORKSEDI#EXPIRING_TRIAL#20251018";
             as2.AS2From = input.SenderAs2Id;
             as2.AS2To = input.ReceiverAs2Id;
 
@@ -60,17 +62,16 @@ public static class As2
 
             as2.Subject = input.Subject;
             as2.URL = connection.As2EndpointUrl;
-            as2.MessageId = Guid.NewGuid().ToString();
+
+            var uri = new Uri(connection.As2EndpointUrl);
+            as2.MessageId = $"<{Guid.NewGuid()}@{uri.Host}>";
 
             if (options.MdnMode == MdnMode.Async)
             {
                 as2.MDNDeliveryOption = options.AsyncMdnUrl;
-                as2.MDNTo = options.AsyncMdnUrl;
             }
-            else
-            {
-                as2.MDNTo = connection.MdnReceiver;
-            }
+
+            as2.MDNTo = connection.MdnReceiver;
 
             if (connection.EncryptMessage || connection.SignMessage)
             {
@@ -94,7 +95,7 @@ public static class As2
             }
 
             as2.EDIData = new EDIData();
-            as2.EDIData.EDIType = "text/plain";
+            as2.EDIData.EDIType = connection.ContentTypeHeader;
             as2.EDIData.Data = await File.ReadAllTextAsync(input.MessageFilePath, cancellationToken);
             as2.LogDirectory = "logs";
 
