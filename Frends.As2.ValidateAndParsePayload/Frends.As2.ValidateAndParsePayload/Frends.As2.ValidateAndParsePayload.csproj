@@ -20,7 +20,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
         <PackageReference Include="Microsoft.Extensions.Features" Version="9.0.9" />
         <PackageReference Include="nsoftware.IPWorksEDI" Version="24.0.9373" />
-        <PackageReference Include="Frends.NSoftware.Activation" Version="1.1.0"/>
+        <PackageReference Include="Frends.NSoftware.Activation" Version="1.0.0"/>
         <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
