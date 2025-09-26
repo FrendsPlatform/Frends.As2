@@ -26,13 +26,13 @@ public class Result
     /// <summary>
     /// AS2 sender identifier.
     /// </summary>
-    /// <example>"PartnerAS2"</example>
+    /// <example>PartnerAS2</example>
     public string As2From { get; set; }
 
     /// <summary>
     /// AS2 receiver identifier.
     /// </summary>
-    /// <example>"MyCompanyAS2"</example>
+    /// <example>MyCompanyAS2</example>
     public string As2To { get; set; }
 
     /// <summary>
