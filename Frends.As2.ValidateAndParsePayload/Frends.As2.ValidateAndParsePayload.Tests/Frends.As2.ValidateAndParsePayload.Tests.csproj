@@ -26,10 +26,10 @@
     </ItemGroup>
 
 	<ItemGroup>
-		<None Include="certs\**\*">
+		<None Include=".\certs\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Include=".\testData\mess.txt">
+		<None Include=".\testData\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

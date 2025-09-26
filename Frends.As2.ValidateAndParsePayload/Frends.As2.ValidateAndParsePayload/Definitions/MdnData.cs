@@ -24,11 +24,6 @@ public class MdnData
     public string Content { get; set; }
 
     /// <summary>
-    /// Raw MDN content as bytes.
-    /// </summary>
-    public byte[] ContentB { get; set; }
-
-    /// <summary>
     /// Message integrity check (MIC) value from the MDN.
     /// </summary>
     /// <example>"abc123xyz==, sha-256"</example>

@@ -1,0 +1,18 @@
+{
+  "Connection": "close",
+  "Host": "localhost:5096",
+  "User-Agent": "IPWorks EDI AS2Sender Component - www.nsoftware.com",
+  "Accept-Encoding": "gzip, deflate",
+  "Content-Type": "multipart/signed; protocol=\"application/pkcs7-signature\"; micalg=sha-256; boundary=\"boundaryCI8wAg==\"",
+  "Date": "Wed, 24 Sep 2025 12:29:46 GMT",
+  "Content-Length": "2301",
+  "AS2-To": "Receiver",
+  "AS2-From": "Sender",
+  "AS2-Version": "1.2",
+  "EDIINT-Features": "CEM, multiple-attachments, AS2-Reliability",
+  "Subject": "Test Connection",
+  "Message-Id": "<de12e923-ae3b-43ce-80b3-3d6ffb38c659>",
+  "Disposition-Notification-To": "usr@example.com",
+  "Disposition-Notification-Options": "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha-256",
+  "MIME-Version": "1.0"
+}

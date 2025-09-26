@@ -1,0 +1,17 @@
+{
+  "Connection": "close",
+  "Host": "localhost:5096",
+  "User-Agent": "IPWorks EDI AS2Sender Component - www.nsoftware.com",
+  "Accept-Encoding": "gzip, deflate",
+  "Content-Type": "text/plain",
+  "Date": "Wed, 24 Sep 2025 12:21:48 GMT",
+  "Content-Length": "30",
+  "AS2-To": "Receiver",
+  "AS2-From": "Sender",
+  "AS2-Version": "1.2",
+  "EDIINT-Features": "CEM, multiple-attachments, AS2-Reliability",
+  "Subject": "Test Connection",
+  "Message-Id": "<f7d8c529-4508-4259-a1f6-2155d2b67c5a>",
+  "Disposition-Notification-To": "usr@example.com",
+  "Content-Disposition": "Attachment; filename=\"rfc1767.edi\""
+}

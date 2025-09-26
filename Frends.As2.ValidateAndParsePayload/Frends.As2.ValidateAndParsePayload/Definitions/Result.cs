@@ -20,8 +20,8 @@ public class Result
     /// <summary>
     /// Decrypted/decompressed business data (EDI/XML/JSON).
     /// </summary>
-    /// <example>byte[] { 0x48, 0x65, 0x6C, 0x6C, 0x6F }</example>
-    public byte[] Payload { get; set; }
+    /// <example>Test message</example>
+    public string Payload { get; set; }
 
     /// <summary>
     /// AS2 sender identifier.
