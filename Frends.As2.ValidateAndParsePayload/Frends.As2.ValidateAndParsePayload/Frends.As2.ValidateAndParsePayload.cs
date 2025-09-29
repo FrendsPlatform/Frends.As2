@@ -35,7 +35,6 @@ public static class As2
             var as2 = NSoftware.Activation.NSoftware.ActivateAs2Receiver();
             var headersString = ConvertHeadersToString(input.Headers);
             as2.RequestHeadersString = headersString;
-            await as2.Config("ErrorProcessingFlags=0x04", cancellationToken);
 
             using var ms = new MemoryStream(input.Body);
             await as2.SetRequestStream(ms, cancellationToken);

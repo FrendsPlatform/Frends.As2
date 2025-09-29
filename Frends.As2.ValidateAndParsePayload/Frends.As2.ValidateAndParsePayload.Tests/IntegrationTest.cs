@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Frends.As2.ValidateAndParsePayload.Definitions;
@@ -27,7 +25,6 @@ public class IntegrationTest
         var result =
             await As2.ValidateAndParsePayload(input, connection, TestSetup.DefaultOptions(), CancellationToken.None);
 
-        Assert.That(result.Error.AdditionalInfo, Is.Empty);
         Assert.That(result.Success, Is.True);
         Assert.That(result.Payload, Is.EqualTo("This is a nice test message :)"));
     }
