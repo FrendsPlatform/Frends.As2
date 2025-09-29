@@ -19,16 +19,7 @@ public class IntegrationTest
     [TestCase("SignedMessage", true, false)]
     public async Task Should_Succeed_With_Correct_Message(string testDirName, bool requireSigned, bool requireEncrypted)
     {
-        var headersJson = await File.ReadAllTextAsync(TestSetup.TestHeadersFilePath(testDirName));
-        var headers = JsonSerializer.Deserialize<Dictionary<string, string>>(headersJson);
-        var bodyBytes = await File.ReadAllBytesAsync(TestSetup.TestBodyFilePath(testDirName));
-
-        var input = new Input
-        {
-            Headers = headers,
-            Body = bodyBytes,
-        };
-
+        var input = await TestSetup.SpecifiedInput(testDirName);
         var connection = TestSetup.DefaultConnection();
         connection.RequireEncrypted = requireEncrypted;
         connection.RequireSigned = requireSigned;
@@ -36,6 +27,7 @@ public class IntegrationTest
         var result =
             await As2.ValidateAndParsePayload(input, connection, TestSetup.DefaultOptions(), CancellationToken.None);
 
+        Assert.That(result.Error.Message, Is.Null);
         Assert.That(result.Success, Is.True);
         Assert.That(result.Payload, Is.EqualTo("This is a nice test message :)"));
     }
@@ -43,16 +35,7 @@ public class IntegrationTest
     [Test]
     public async Task Should_Fail_With_Incorrect_PartnerCert()
     {
-        var headersJson = await File.ReadAllTextAsync(TestSetup.TestHeadersFilePath("SignedMessage"));
-        var headers = JsonSerializer.Deserialize<Dictionary<string, string>>(headersJson);
-        var bodyBytes = await File.ReadAllBytesAsync(TestSetup.TestBodyFilePath("SignedMessage"));
-
-        var input = new Input
-        {
-            Headers = headers,
-            Body = bodyBytes,
-        };
-
+        var input = await TestSetup.SpecifiedInput("SignedMessage");
         var connection = TestSetup.DefaultConnection();
         connection.RequireEncrypted = false;
         connection.RequireSigned = true;
@@ -68,16 +51,7 @@ public class IntegrationTest
     [Test]
     public async Task Should_Fail_With_Incorrect_OwnCert()
     {
-        var headersJson = await File.ReadAllTextAsync(TestSetup.TestHeadersFilePath("EncryptedMessage"));
-        var headers = JsonSerializer.Deserialize<Dictionary<string, string>>(headersJson);
-        var bodyBytes = await File.ReadAllBytesAsync(TestSetup.TestBodyFilePath("EncryptedMessage"));
-
-        var input = new Input
-        {
-            Headers = headers,
-            Body = bodyBytes,
-        };
-
+        var input = await TestSetup.SpecifiedInput("EncryptedMessage");
         var connection = TestSetup.DefaultConnection();
         connection.RequireEncrypted = true;
         connection.RequireSigned = false;
@@ -94,16 +68,7 @@ public class IntegrationTest
     [Test]
     public async Task Should_Fail_With_Incorrect_OwnCert_Password()
     {
-        var headersJson = await File.ReadAllTextAsync(TestSetup.TestHeadersFilePath("EncryptedMessage"));
-        var headers = JsonSerializer.Deserialize<Dictionary<string, string>>(headersJson);
-        var bodyBytes = await File.ReadAllBytesAsync(TestSetup.TestBodyFilePath("EncryptedMessage"));
-
-        var input = new Input
-        {
-            Headers = headers,
-            Body = bodyBytes,
-        };
-
+        var input = await TestSetup.SpecifiedInput("EncryptedMessage");
         var connection = TestSetup.DefaultConnection();
         connection.RequireEncrypted = true;
         connection.RequireSigned = false;
