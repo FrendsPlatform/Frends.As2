@@ -30,8 +30,8 @@ public static class As2
         Options options,
         CancellationToken cancellationToken)
     {
-        try
-        {
+        // try
+        // {
             var as2 = NSoftware.Activation.NSoftware.ActivateAs2Receiver();
             var headersString = ConvertHeadersToString(input.Headers);
             as2.RequestHeadersString = headersString;
@@ -70,11 +70,11 @@ public static class As2
                     MicValue = as2.MDNReceipt.MICValue,
                 },
             };
-        }
-        catch (Exception e)
-        {
-            return ErrorHandler.Handle(e, options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
-        }
+        // }
+        // catch (Exception e)
+        // {
+        //     return ErrorHandler.Handle(e, options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
+        // }
     }
 
     private static string ConvertHeadersToString(Dictionary<string, string> headers)
