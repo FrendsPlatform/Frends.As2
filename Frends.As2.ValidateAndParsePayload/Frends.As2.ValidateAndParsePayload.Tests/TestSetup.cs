@@ -13,7 +13,7 @@ public static class TestSetup
     {
         return new Options
         {
-            ThrowErrorOnFailure = true,
+            ThrowErrorOnFailure = false,
             ErrorMessageOnFailure = "Error occured",
         };
     }
