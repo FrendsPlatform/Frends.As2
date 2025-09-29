@@ -22,6 +22,14 @@ public class IntegrationTest
         connection.RequireEncrypted = requireEncrypted;
         connection.RequireSigned = requireSigned;
 
+        if (testDirName is "AsyncSignedMessage" or "SignedMessage")
+        {
+            Console.WriteLine($"Bytes number: {input.Body.Length}");
+            var headersJson = await File.ReadAllTextAsync(TestSetup.TestHeadersFilePath("SignedMessage"));
+
+            Console.WriteLine($"Headers: {headersJson}");
+        }
+
         var result =
             await As2.ValidateAndParsePayload(input, connection, TestSetup.DefaultOptions(), CancellationToken.None);
 
