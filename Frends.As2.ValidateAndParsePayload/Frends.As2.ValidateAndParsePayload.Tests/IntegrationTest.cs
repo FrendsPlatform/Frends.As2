@@ -24,7 +24,7 @@ public class IntegrationTest
 
         if (testDirName is "AsyncSignedMessage" or "SignedMessage")
         {
-            Console.WriteLine($"Bytes number: {input.Body.Length}");
+            Console.WriteLine($"Bytes number : {input.Body.Length}");
             var headersJson = await File.ReadAllTextAsync(TestSetup.TestHeadersFilePath(testDirName));
 
             Console.WriteLine($"Headers: {headersJson}");
