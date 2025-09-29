@@ -41,6 +41,11 @@ public class IntegrationTest
         var result =
             await As2.ValidateAndParsePayload(input, connection, TestSetup.DefaultOptions(), CancellationToken.None);
 
+        Console.WriteLine($"Bytes number: {input.Body.Length}");
+        var headersJson = await File.ReadAllTextAsync(TestSetup.TestHeadersFilePath("SignedMessage"));
+
+        Console.WriteLine($"Headers: {headersJson}");
+
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error.Message, Does.Contain("Unable to authenticate signature"));
     }
