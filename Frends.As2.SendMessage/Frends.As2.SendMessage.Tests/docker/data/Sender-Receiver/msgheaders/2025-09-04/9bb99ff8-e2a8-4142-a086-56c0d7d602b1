@@ -1,0 +1,26 @@
+Headers:
+Content-Type: text/plain
+Host: localhost:4080
+Accept-Encoding: gzip, deflate
+User-Agent: IPWorks EDI AS2Sender Component - www.nsoftware.com
+Connection: close
+Content-Length: 2878
+AS2-To: Receiver
+AS2-From: Sender
+AS2-Version: 1.2
+EDIINT-Features: CEM, multiple-attachments, AS2-Reliability
+Date: Thu, 04 Sep 2025 05:49:42 GMT
+Subject: Test Connection
+Message-Id: <9bb99ff8-e2a8-4142-a086-56c0d7d602b1>
+Disposition-Notification-To: usr@example.com
+Disposition-Notification-Options: signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha-256
+MIME-Version: 1.0
+Content-Disposition: Attachment; filename="rfc1767.edi"
+
+Attributes:
+HTTP_REQUEST_TYPE: POST
+destination_ip: /172.18.0.3
+destination_port: 10080
+HTTP_REQUEST_URL: /
+source_port: 36526
+source_ip: /172.18.0.1

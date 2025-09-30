@@ -1,0 +1,24 @@
+Headers:
+Date: Thu, 04 Sep 2025 06:24:39 +0000
+From: receiver@test.com
+Message-ID: <20250904062439+0000-694-Sender_Receiver_null>
+Subject: SignedAndEncrypted Connection
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; 	boundary="----=_Part_7_1744803522.1756967079241"
+AS2-To: Sender
+AS2-From: Receiver
+AS2-Version: 1.1
+Connection: close, TE
+User-Agent: OpenAS2 Server v4.5.2
+Server: OpenAS2 Server v4.5.2
+Content-Length: 2286
+
+Attributes:
+FINAL_RECIPIENT: rfc822; Receiver
+MIC: xome0tpzHY9vu6OzawXBEbOkTkY9QO7jpBYe1DIK3IU=, sha-256
+REPORTING_UA: OpenAS2 Server v4.5.2@/172.18.0.3:10080
+ORIGINAL_MESSAGE_ID: <01a3b7f0-c7a8-41fc-be54-aaca0df96387>
+ORIGINAL_RECIPIENT: rfc822; Receiver
+DISPOSITION: automatic-action/MDN-sent-automatically; processed
+Text:
+The message sent to Recipient Receiver on Thu, 04 Sep 2025 06:24:39 GMT with Subject Test Connection has been received, the EDI Interchange was successfully decrypted and it's integrity was verified. In addition, the sender of the message, Sender Sender at Location /172.18.0.1 was authenticated as the originator of the message. There is no guarantee however that the EDI Interchange was syntactically correct, or was received by the EDI application/translator.

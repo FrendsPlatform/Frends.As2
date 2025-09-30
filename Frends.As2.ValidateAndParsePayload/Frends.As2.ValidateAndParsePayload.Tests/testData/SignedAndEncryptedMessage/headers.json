@@ -1,0 +1,19 @@
+{
+  "Connection": "close",
+  "Host": "localhost:5096",
+  "User-Agent": "IPWorks EDI AS2Sender Component - www.nsoftware.com",
+  "Accept-Encoding": "gzip, deflate",
+  "Content-Type": "application/pkcs7-mime; smime-type=enveloped-data; name=\"smime.p7m\"",
+  "Date": "Wed, 24 Sep 2025 12:29:03 GMT",
+  "Content-Length": "2886",
+  "AS2-To": "Receiver",
+  "AS2-From": "Sender",
+  "AS2-Version": "1.2",
+  "EDIINT-Features": "CEM, multiple-attachments, AS2-Reliability",
+  "Subject": "Test Connection",
+  "Message-Id": "<bfc0a603-ea37-4649-ae61-0046c6c944e1>",
+  "Disposition-Notification-To": "usr@example.com",
+  "Disposition-Notification-Options": "signed-receipt-protocol=optional, pkcs7-signature; signed-receipt-micalg=optional, sha-256",
+  "MIME-Version": "1.0",
+  "Content-Disposition": "attachment; filename=\"smime.p7m\""
+}

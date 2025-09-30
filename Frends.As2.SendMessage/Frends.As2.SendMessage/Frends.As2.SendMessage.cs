@@ -40,7 +40,6 @@ public static class As2
             var as2 = NSoftware.Activation.NSoftware.ActivateAs2Sender();
             as2.AS2From = input.SenderAs2Id;
             as2.AS2To = input.ReceiverAs2Id;
-
             if (input.AdditionalHeaders != null)
             {
                 foreach (var header in input.AdditionalHeaders)

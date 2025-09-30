@@ -1,12 +1,16 @@
 # Frends.As2
 
-Frends tasks for handling messages with AS2 protocol
+Frends tasks for handling message in As2 protocol.
+
 # Tasks
 
 - [Frends.As2.SendMessage](Frends.As2.SendMessage/README.md)
+- [Frends.As2.ValidateAndParsePayload](Frends.As2.ValidateAndParsePayload/README.md)
 
 # Contributing
-When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
+
+When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other
+method with the owners of this repository before making a change.
 
 1. Fork the repository on GitHub
 2. Clone the project to your own machine
