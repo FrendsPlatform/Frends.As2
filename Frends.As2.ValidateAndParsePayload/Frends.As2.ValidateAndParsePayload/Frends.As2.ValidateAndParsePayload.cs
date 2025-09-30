@@ -34,7 +34,7 @@ public static class As2
     {
         try
         {
-            if(input.Body.Length == 0 || input.Headers.Count == 0)
+            if (input.Body.Length == 0 || input.Headers.Count == 0)
                 throw new ArgumentException("Input body or headers were empty.");
             var as2 = NSoftware.Activation.NSoftware.ActivateAs2Receiver();
             var headersString = ConvertHeadersToString(input.Headers);
