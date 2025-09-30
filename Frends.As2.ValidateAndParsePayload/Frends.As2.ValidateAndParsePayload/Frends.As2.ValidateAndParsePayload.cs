@@ -39,10 +39,8 @@ public static class As2
             var as2 = NSoftware.Activation.NSoftware.ActivateAs2Receiver();
             var headersString = ConvertHeadersToString(input.Headers);
             as2.RequestHeadersString = headersString;
-
             using var ms = new MemoryStream(input.Body);
             await as2.SetRequestStream(ms, cancellationToken);
-
             if (connection.RequireSigned)
             {
                 as2.SignerCert = new Certificate(connection.PartnerCertificatePath);

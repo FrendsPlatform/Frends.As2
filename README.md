@@ -1,6 +1,6 @@
 # Frends.As2
 
-Frends tasks for Python operations.
+Frends tasks for handling message in As2 protocol.
 
 # Tasks
 
