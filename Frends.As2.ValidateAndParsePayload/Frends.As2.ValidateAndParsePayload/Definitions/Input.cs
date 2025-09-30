@@ -20,7 +20,7 @@ public class Input
     ///     "Content-Type": "application/pkcs7-mime; smime-type=enveloped-data; name=\"smime.p7m\""
     /// }
     /// </example>
-    public Dictionary<string, string> Headers { get; set; }
+    public Dictionary<string, string> Headers { get; set; } = [];
 
     /// <summary>
     /// Raw body content as byte array containing the AS2 message payload (encrypted/signed data).
@@ -28,5 +28,5 @@ public class Input
     /// <example>
     /// Encoding.UTF8.GetBytes("This is a test AS2 message payload")
     /// </example>
-    public byte[] Body { get; set; }
+    public byte[] Body { get; set; } = [];
 }

@@ -110,6 +110,6 @@ public class IntegrationTest
                 TestSetup.DefaultOptions(),
                 CancellationToken.None);
         Assert.That(result.Success, Is.False);
-        Assert.That(result.Error.Message, Does.Contain("Error occured"));
+        Assert.That(result.Error.Message, Does.Contain("Error occurred"));
     }
 }

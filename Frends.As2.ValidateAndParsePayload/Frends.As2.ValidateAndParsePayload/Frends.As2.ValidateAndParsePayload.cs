@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -23,15 +24,18 @@ public static class As2
     /// <param name="connection">Connection parameters.</param>
     /// <param name="options">Additional parameters.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
-    /// <returns>object { bool Success, string Output, object Error { string Message, dynamic AdditionalInfo } }</returns>
+    /// <returns>object {
+    /// bool Success, string Payload, string As2From, string As2To, string MessageId, MdnData MdnReceipt, object Error { string Message, Exception AdditionalInfo } }</returns>
     public static async Task<Result> ValidateAndParsePayload(
-        Input input,
-        Connection connection,
-        Options options,
+        [PropertyTab] Input input,
+        [PropertyTab] Connection connection,
+        [PropertyTab] Options options,
         CancellationToken cancellationToken)
     {
         try
         {
+            if(input.Body.Length == 0 || input.Headers.Count == 0)
+                throw new ArgumentException("Input body or headers were empty.");
             var as2 = NSoftware.Activation.NSoftware.ActivateAs2Receiver();
             var headersString = ConvertHeadersToString(input.Headers);
             as2.RequestHeadersString = headersString;

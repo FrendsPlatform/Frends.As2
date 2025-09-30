@@ -14,7 +14,7 @@ public static class TestSetup
         return new Options
         {
             ThrowErrorOnFailure = false,
-            ErrorMessageOnFailure = "Error occured",
+            ErrorMessageOnFailure = "Error occurred",
         };
     }
 
