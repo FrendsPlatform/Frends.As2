@@ -21,6 +21,7 @@ public class MdnData
     /// <summary>
     /// Raw MDN content (MIME format).
     /// </summary>
+    /// <example>"Content-Type: multipart/signed\r\n\r\n..."</example>
     public string Content { get; set; }
 
     /// <summary>
