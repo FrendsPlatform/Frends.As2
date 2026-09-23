@@ -24,6 +24,22 @@ public class Options
     public string AsyncMdnUrl { get; set; }
 
     /// <summary>
+    /// Disables server certificate validation for the HTTPS connection to the AS2 endpoint.
+    /// </summary>
+    /// <example>false</example>
+    [DefaultValue(false)]
+    public bool AllowInvalidCertificate { get; set; }
+
+    /// <summary>
+    /// Base64 encoded server (or issuing CA) certificate, in DER or PEM format, that should be trusted
+    /// for the HTTPS connection to the AS2 endpoint.
+    /// </summary>
+    /// <example>MIIDXTCCAkWgAwIBAgIJAJC1H...</example>
+    [DisplayFormat(DataFormatString = "Text")]
+    [UIHint(nameof(AllowInvalidCertificate), "", false)]
+    public string TrustedCertificateBase64 { get; set; }
+
+    /// <summary>
     /// Whether to throw an error on failure.
     /// </summary>
     /// <example>false</example>

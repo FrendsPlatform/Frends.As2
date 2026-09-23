@@ -40,6 +40,7 @@ public static class As2
             var as2 = NSoftware.Activation.NSoftware.ActivateAs2Sender();
             as2.AS2From = input.SenderAs2Id;
             as2.AS2To = input.ReceiverAs2Id;
+
             if (input.AdditionalHeaders != null)
             {
                 foreach (var header in input.AdditionalHeaders)
@@ -62,6 +63,7 @@ public static class As2
 
             var uri = new Uri(connection.As2EndpointUrl);
             as2.MessageId = $"<{Guid.NewGuid()}@{uri.Host}>";
+            ConfigureServerCertificateValidation(as2, options);
 
             if (options.MdnMode == MdnMode.Async)
             {
@@ -113,11 +115,37 @@ public static class As2
                 MdnMessage = options.MdnMode == MdnMode.Async ? "MDN delivery pending" : mdn.Message,
                 MdnIntegrityCheck = options.MdnMode == MdnMode.Async ? null : mdn.MICValue,
             };
+
             return result;
         }
         catch (Exception e)
         {
             return ErrorHandler.Handle(e, options.ThrowErrorOnFailure, options.ErrorMessageOnFailure);
         }
+    }
+
+    private static void ConfigureServerCertificateValidation(AS2Sender as2, Options options)
+    {
+        if (options.AllowInvalidCertificate)
+        {
+            as2.OnSSLServerAuthentication += (_, e) => e.Accept = true;
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(options.TrustedCertificateBase64)) return;
+
+        byte[] trustedCertificateBytes;
+
+        try
+        {
+            trustedCertificateBytes = Convert.FromBase64String(options.TrustedCertificateBase64);
+        }
+        catch (FormatException ex)
+        {
+            throw new ArgumentException("TrustedCertificateBase64 is not a valid base64-encoded string.", ex);
+        }
+
+        as2.SSLAcceptServerCert = new Certificate(trustedCertificateBytes);
     }
 }
