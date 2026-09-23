@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +35,31 @@ public static class TestSetup
             ContentTypeHeader = "text/plain",
             MdnReceiver = "usr@example.com",
         };
+
+    public static Connection HttpsConnection()
+    {
+        var connection = Connection();
+        connection.As2EndpointUrl = "https://localhost:4443";
+
+        return connection;
+    }
+
+    public static async Task<string> GetOpenAs2ServerCertificateBase64Async(CancellationToken token)
+    {
+        using var client = new TcpClient();
+        await client.ConnectAsync("localhost", 4443, token);
+
+        await using var ssl = new SslStream(client.GetStream(), false, (_, _, _, _) => true);
+        await ssl.AuthenticateAsClientAsync(
+            new SslClientAuthenticationOptions
+            {
+                TargetHost = "localhost",
+            }, token);
+
+        using var certificate = new X509Certificate2(ssl.RemoteCertificate);
+
+        return Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
+    }
 
     public static Options Options() => new()
     {
