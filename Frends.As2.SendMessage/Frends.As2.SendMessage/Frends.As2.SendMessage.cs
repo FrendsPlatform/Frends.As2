@@ -37,7 +37,7 @@ public static class As2
                 throw new ArgumentException("AsyncMdnUrl must be provided when MdnMode is set to Async");
             }
 
-            var as2 = NSoftware.Activation.NSoftware.ActivateAs2Sender();
+            using var as2 = NSoftware.Activation.NSoftware.ActivateAs2Sender();
             as2.AS2From = input.SenderAs2Id;
             as2.AS2To = input.ReceiverAs2Id;
 
