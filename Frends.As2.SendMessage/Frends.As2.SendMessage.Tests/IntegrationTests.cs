@@ -229,11 +229,26 @@ public class IntegrationTests
     }
 
     [Test]
-    public async Task ShouldFailWhenTrustedCertificateBase64DoesNotMatchServerCertificate()
+    public async Task ShouldSendMessageOverHttpsWhenTrustedCertificateBase64ContainsPemEncodedServerCertificate()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var trustedCertificateBase64 = await TestSetup.GetOpenAs2ServerCertificatePemBase64Async(cts.Token);
+
+        var con = TestSetup.HttpsConnection();
+        var opt = TestSetup.Options();
+        opt.TrustedCertificateBase64 = trustedCertificateBase64;
+
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task ShouldFailWhenTrustedCertificateBase64ContainsDifferentValidCertificate()
     {
         var con = TestSetup.HttpsConnection();
         var opt = TestSetup.Options();
-        opt.TrustedCertificateBase64 = "invalid-cert";
+        opt.TrustedCertificateBase64 = TestSetup.GetSenderCertificateBase64();
 
         var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
 
