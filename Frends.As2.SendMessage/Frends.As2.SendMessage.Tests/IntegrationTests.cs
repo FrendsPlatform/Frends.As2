@@ -188,4 +188,84 @@ public class IntegrationTests
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error.Message, Does.Contain("AsyncMdnUrl must be provided when MdnMode is set to Async"));
     }
+
+    [Test]
+    public async Task ShouldFailWithUntrustedCertificateOverHttpsByDefault()
+    {
+        var con = TestSetup.HttpsConnection();
+        var opt = TestSetup.Options();
+
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message, Does.Contain("certificate").IgnoreCase);
+    }
+
+    [Test]
+    public async Task ShouldSendMessageOverHttpsWhenAllowInvalidCertificateIsTrue()
+    {
+        var con = TestSetup.HttpsConnection();
+        var opt = TestSetup.Options();
+        opt.AllowInvalidCertificate = true;
+
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task ShouldSendMessageOverHttpsWhenTrustedCertificateBase64MatchesServerCertificate()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var trustedCertificateBase64 = await TestSetup.GetOpenAs2ServerCertificateBase64Async(cts.Token);
+
+        var con = TestSetup.HttpsConnection();
+        var opt = TestSetup.Options();
+        opt.TrustedCertificateBase64 = trustedCertificateBase64;
+
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task ShouldSendMessageOverHttpsWhenTrustedCertificateBase64ContainsPemEncodedServerCertificate()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var trustedCertificateBase64 = await TestSetup.GetOpenAs2ServerCertificatePemBase64Async(cts.Token);
+
+        var con = TestSetup.HttpsConnection();
+        var opt = TestSetup.Options();
+        opt.TrustedCertificateBase64 = trustedCertificateBase64;
+
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+    }
+
+    [Test]
+    public async Task ShouldFailWhenTrustedCertificateBase64ContainsDifferentValidCertificate()
+    {
+        var con = TestSetup.HttpsConnection();
+        var opt = TestSetup.Options();
+        opt.TrustedCertificateBase64 = TestSetup.GetSenderCertificateBase64();
+
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message, Does.Contain("certificate").IgnoreCase);
+    }
+
+    [Test]
+    public async Task ShouldFailWithInvalidTrustedCertificateBase64Format()
+    {
+        var con = TestSetup.HttpsConnection();
+        var opt = TestSetup.Options();
+        opt.TrustedCertificateBase64 = "not-a-valid-base64-certificate!!";
+
+        var result = await As2.SendMessage(TestSetup.Input(), con, opt, CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.Error.Message, Does.Contain("TrustedCertificateBase64 is not a valid base64-encoded string."));
+    }
 }

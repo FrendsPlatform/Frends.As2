@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +35,37 @@ public static class TestSetup
             ContentTypeHeader = "text/plain",
             MdnReceiver = "usr@example.com",
         };
+
+    public static Connection HttpsConnection()
+    {
+        var connection = Connection();
+        connection.As2EndpointUrl = "https://localhost:4443";
+
+        return connection;
+    }
+
+    public static async Task<string> GetOpenAs2ServerCertificateBase64Async(CancellationToken token)
+    {
+        using var certificate = await GetOpenAs2ServerCertificateAsync(token);
+
+        return Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
+    }
+
+    public static async Task<string> GetOpenAs2ServerCertificatePemBase64Async(CancellationToken token)
+    {
+        using var certificate = await GetOpenAs2ServerCertificateAsync(token);
+
+        return Convert.ToBase64String(Encoding.UTF8.GetBytes(certificate.ExportCertificatePem()));
+    }
+
+    public static string GetSenderCertificateBase64()
+    {
+        using var certificate = new X509Certificate2(
+            Path.Combine(AppContext.BaseDirectory, "certs", "sender.pfx"),
+            "sender123");
+
+        return Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
+    }
 
     public static Options Options() => new()
     {
@@ -67,6 +101,21 @@ public static class TestSetup
             listener.Stop();
             listener.Close();
         }
+    }
+
+    private static async Task<X509Certificate2> GetOpenAs2ServerCertificateAsync(CancellationToken token)
+    {
+        using var client = new TcpClient();
+        await client.ConnectAsync("localhost", 4443, token);
+
+        await using var ssl = new SslStream(client.GetStream(), false, (_, _, _, _) => true);
+        await ssl.AuthenticateAsClientAsync(
+            new SslClientAuthenticationOptions
+            {
+                TargetHost = "localhost",
+            }, token);
+
+        return new X509Certificate2(ssl.RemoteCertificate);
     }
 
     private static async Task<HttpListenerContext> GetContextAsync(HttpListener listener, CancellationToken token)

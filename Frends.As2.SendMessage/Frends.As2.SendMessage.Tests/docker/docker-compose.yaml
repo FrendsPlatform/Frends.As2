@@ -4,6 +4,7 @@
     ports:
       - 4080:10080
       - 4081:10081
+      - 4443:10443
       - ${HOST_RESTAPI_PORT:-8443}:8080
     environment:
       - OPENAS2PROP_RESTAPI__COMMAND__PROCESSOR__BASEURI=http://0.0.0.0:8080
