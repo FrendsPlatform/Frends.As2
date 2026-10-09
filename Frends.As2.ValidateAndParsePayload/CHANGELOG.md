@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.2.0] - 2026-10-09
+
+### Fixed
+
+- Own certificate is now loaded with automatic certificate store type detection, fixing Digital ID/cert store errors.
+
 ## [1.1.0] - 2026-07-18
 
 ### Fixed

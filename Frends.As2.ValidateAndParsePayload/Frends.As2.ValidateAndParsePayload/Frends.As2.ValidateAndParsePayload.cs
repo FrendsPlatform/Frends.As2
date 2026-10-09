@@ -49,7 +49,7 @@ public static class As2
             if (connection.RequireSigned || connection.RequireEncrypted)
             {
                 as2.Certificate = new Certificate(
-                    CertStoreTypes.cstPFXFile,
+                    CertStoreTypes.cstAuto,
                     connection.OwnCertificatePath,
                     connection.OwnCertificatePassword,
                     "*");

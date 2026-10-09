@@ -76,7 +76,10 @@ public class IntegrationTest
             await As2.ValidateAndParsePayload(input, connection, TestSetup.DefaultOptions(), CancellationToken.None);
 
         Assert.That(result.Success, Is.False);
-        Assert.That(result.Error.Message, Does.Contain("Cannot open certificate store"));
+        // The message is platform-dependent (Windows vs. Linux runners)
+        Assert.That(
+            result.Error.Message,
+            Does.Contain("Cannot open certificate store").Or.Contain("The storeName value was invalid"));
     }
 
     [Test]
